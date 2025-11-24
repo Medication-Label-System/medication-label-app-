@@ -644,6 +644,7 @@ function App() {
   // ==================== ADMIN MANAGEMENT ====================
 
   // Admin login
+ // eslint-disable-next-line no-unused-vars
   const handleAdminLogin = async () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/api/admin/login`, {
