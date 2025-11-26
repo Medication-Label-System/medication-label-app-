@@ -5,7 +5,8 @@ import "./App.css";
 // Import your logo - adjust the path and file name as needed
 import pharmacyLogo from "./assets/logo.png";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://982f1e1a-2983-404d-a359-a517bdb8eff0-00-1tul3hqr1nf9g.picard.replit.dev";
+
 function App() {
   const [user, setUser] = useState(null);
   const [medications, setMedications] = useState([]);
