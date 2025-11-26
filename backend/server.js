@@ -6,7 +6,7 @@ const path = require("path");
 const app = express();
 
 // ✅ FIXED FOR DEPLOYMENT: Dynamic port for hosting platforms
-const PORT = process.env.PORT || 3001;
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://982f1e1a-2983-404d-a359-a517bdb8eff0-00-1tul3hqr1nf9g.picard.replit.dev";
 
 // ✅ FIXED DATABASE PATH: Use absolute path that works in production
 const dbPath =
