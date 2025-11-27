@@ -18,6 +18,11 @@ function App() {
   const [useCustomInstruction, setUseCustomInstruction] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [activeTab, setActiveTab] = useState("medications");
+  const [systemSettings, setSystemSettings] = useState({
+  system_enabled: 'true',
+  maintenance_mode: 'false', 
+  allowed_users: 'all'
+  });
 
   // Custom Drug State
   const [showCustomDrugModal, setShowCustomDrugModal] = useState(false);
@@ -84,30 +89,78 @@ function App() {
 
   // ==================== AUTHENTICATION ====================
   const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/auth/login`,
-        loginData,
-      );
-      if (response.data.success) {
-        setUser(response.data.user);
-
-        // Check if this is the admin user
-        if (loginData.username === "mahmoud_abdelkader" && loginData.password === "12345") {
-          setIsAdmin(true);
-          alert(`Welcome System Administrator! Admin privileges activated.`);
-        } else {
-          setIsAdmin(false);
-          alert(`Welcome ${response.data.user.fullName}!`);
-        }
-      } else {
-        alert("Login failed: " + response.data.message);
+  e.preventDefault();
+  
+  try {
+    // 🔐 CHECK 1: See if system is enabled (YOUR KILL SWITCH)
+    const { data: settings, error: settingsError } = await supabase
+      .from('system_settings')
+      .select('*')
+      .in('setting_key', ['system_enabled', 'maintenance_mode', 'allowed_users']);
+  
+    if (settingsError) {
+      console.error('Settings error:', settingsError);
+      // Continue with login if settings table doesn't exist yet
+    } else {
+      const systemEnabled = settings?.find(s => s.setting_key === 'system_enabled')?.setting_value === 'true';
+      const maintenanceMode = settings?.find(s => s.setting_key === 'maintenance_mode')?.setting_value === 'true';
+      const allowedUsers = settings?.find(s => s.setting_key === 'allowed_users')?.setting_value;
+  
+      // 🚫 SYSTEM DISABLED - Only you (mahmoud_abdelkader) can login
+      if (!systemEnabled && loginData.username !== 'mahmoud_abdelkader') {
+        alert('🚫 System is currently disabled by administrator. Please try again later.');
+        return;
       }
-    } catch (error) {
-      alert("Login error: " + error.message);
+  
+      // 🔧 MAINTENANCE MODE - Only you can login
+      if (maintenanceMode && loginData.username !== 'mahmoud_abdelkader') {
+        alert('🔧 System is in maintenance mode. Only administrators can login.');
+        return;
+      }
+  
+      // 👥 RESTRICTED USERS - Only specific users can login
+      if (allowedUsers && allowedUsers !== 'all') {
+        const allowedList = allowedUsers.split(',').map(u => u.trim());
+        if (!allowedList.includes(loginData.username) && loginData.username !== 'mahmoud_abdelkader') {
+          alert('🚫 Your account is not currently authorized to access the system.');
+          return;
+        }
+      }
     }
-  };
+  
+    // ✅ CONTINUE NORMAL LOGIN
+    const { data: users, error } = await supabase
+      .from('tblUsers')
+      .select('*')
+      .eq('UserName', loginData.username)
+      .eq('Password', loginData.password)
+      .eq('IsActive', true);
+  
+    if (error || !users || users.length === 0) {
+      alert('Invalid username or password');
+      return;
+    }
+  
+    const user = users[0];
+    setUser({
+      id: user.UserID,
+      username: user.UserName,
+      fullName: user.FullName,
+      accessLevel: user.AccessLevel
+    });
+  
+    // Check if admin
+    if (user.UserName === "mahmoud_abdelkader" && loginData.password === "12345") {
+      setIsAdmin(true);
+      alert(`👑 Welcome System Administrator ${user.FullName}! Admin privileges activated.`);
+    } else {
+      alert(`✅ Welcome ${user.FullName}!`);
+    }
+    
+  } catch (error) {
+    alert('Login error: ' + error.message);
+  }
+ };
 
   const handleLogout = () => {
     setUser(null);
@@ -128,6 +181,46 @@ function App() {
       console.error("Error loading medications:", error);
     }
   };
+  
+  // Add these functions with your other admin functions:
+
+const loadSystemSettings = async () => {
+  try {
+    const { data: settings, error } = await supabase
+      .from('system_settings')
+      .select('*');
+    
+    if (!error && settings) {
+      const settingsObj = {};
+      settings.forEach(setting => {
+        settingsObj[setting.setting_key] = setting.setting_value;
+      });
+      setSystemSettings(settingsObj);
+    }
+  } catch (error) {
+    console.error('Error loading settings:', error);
+  }
+};
+
+const updateSystemSetting = async (key, value) => {
+  try {
+    const { error } = await supabase
+      .from('system_settings')
+      .update({ 
+        setting_value: value.toString(),
+        updated_by: user.username,
+        updated_at: new Date().toISOString()
+      })
+      .eq('setting_key', key);
+
+    if (error) throw error;
+    
+    setSystemSettings(prev => ({ ...prev, [key]: value.toString() }));
+    alert('✅ Setting updated successfully!');
+  } catch (error) {
+    alert('❌ Error updating setting: ' + error.message);
+  }
+};
 
   const filterMedications = (medications, searchTerm) => {
     if (!searchTerm.trim()) return medications;
@@ -670,6 +763,7 @@ function App() {
     loadAdminUsers();
     loadAdminStatistics();
     loadRecentActivities();
+	loadSystemSettings();
   };
 
   // Close admin panel
@@ -2244,49 +2338,85 @@ function App() {
       )}
 
       {/* Admin Panel Modal */}
-      {showAdminPanel && (
-        <div className="modal-overlay">
-          <div className="modal-content extra-large-modal">
-            <div className="modal-header">
-              <h2>👑 System Administration Panel</h2>
-              <button className="close-button" onClick={closeAdminPanel}>
-                ✕
+      {/* SYSTEM ACCESS CONTROL PANEL */}
+        <div className="system-controls" style={{border: '2px solid #dc3545', padding: '15px', borderRadius: '8px', margin: '10px 0', background: '#fff5f5'}}>
+          <h3>🔐 SYSTEM ACCESS CONTROL</h3>
+          <p style={{color: '#dc3545', fontSize: '14px'}}>Control who can access the system</p>
+          
+          <div style={{margin: '15px 0'}}>
+            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <input
+                type="checkbox"
+                checked={systemSettings.system_enabled === 'true'}
+                onChange={(e) => updateSystemSetting('system_enabled', e.target.checked)}
+              />
+              <span style={{fontWeight: 'bold', color: systemSettings.system_enabled === 'true' ? 'green' : 'red'}}>
+                {systemSettings.system_enabled === 'true' ? '✅ SYSTEM ENABLED' : '🚫 SYSTEM DISABLED'}
+              </span>
+            </label>
+            <small style={{display: 'block', marginLeft: '30px', color: '#666'}}>
+              Master switch - when disabled, only you (mahmoud_abdelkader) can login
+            </small>
+          </div>
+        
+          <div style={{margin: '15px 0'}}>
+            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+              <input
+                type="checkbox"
+                checked={systemSettings.maintenance_mode === 'true'}
+                onChange={(e) => updateSystemSetting('maintenance_mode', e.target.checked)}
+              />
+              <span style={{fontWeight: 'bold', color: systemSettings.maintenance_mode === 'true' ? 'orange' : 'green'}}>
+                {systemSettings.maintenance_mode === 'true' ? '🔧 MAINTENANCE MODE' : '✅ NORMAL MODE'}
+              </span>
+            </label>
+            <small style={{display: 'block', marginLeft: '30px', color: '#666'}}>
+              When enabled, only administrators can login
+            </small>
+          </div>
+        
+          <div style={{margin: '15px 0'}}>
+            <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>Allowed Users:</label>
+            <input
+              type="text"
+              value={systemSettings.allowed_users}
+              onChange={(e) => updateSystemSetting('allowed_users', e.target.value)}
+              placeholder="all or comma-separated usernames"
+              style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px'}}
+            />
+            <small style={{color: '#666'}}>
+              Enter "all" to allow everyone, or specific usernames like "user1,user2,user3"
+            </small>
+          </div>
+        
+          <div style={{marginTop: '20px', padding: '10px', background: '#f8f9fa', borderRadius: '5px'}}>
+            <h4>Quick Actions:</h4>
+            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+              <button 
+                onClick={() => updateSystemSetting('system_enabled', false)}
+                style={{padding: '8px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                🚫 Disable System for Everyone
+              </button>
+              <button 
+                onClick={() => updateSystemSetting('system_enabled', true)}
+                style={{padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                ✅ Enable System for Everyone
+              </button>
+              <button 
+                onClick={() => {
+                  updateSystemSetting('maintenance_mode', true);
+                  updateSystemSetting('allowed_users', 'mahmoud_abdelkader');
+                }}
+                style={{padding: '8px 12px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+              >
+                🔧 Enter Maintenance Mode
               </button>
             </div>
-
-            <div className="modal-body">
-              {/* Admin Navigation Tabs */}
-              <div className="admin-tabs">
-                <button 
-                  className={`admin-tab ${adminActiveTab === 'dashboard' ? 'active' : ''}`}
-                  onClick={() => setAdminActiveTab('dashboard')}
-                >
-                  📊 Dashboard
-                </button>
-                <button 
-                  className={`admin-tab ${adminActiveTab === 'users' ? 'active' : ''}`}
-                  onClick={() => setAdminActiveTab('users')}
-                >
-                  👥 User Management
-                </button>
-                <button 
-                  className={`admin-tab ${adminActiveTab === 'statistics' ? 'active' : ''}`}
-                  onClick={() => setAdminActiveTab('statistics')}
-                >
-                  📈 Statistics
-                </button>
-                <button 
-                  className={`admin-tab ${adminActiveTab === 'activity' ? 'active' : ''}`}
-                  onClick={() => setAdminActiveTab('activity')}
-                >
-                  🔄 Recent Activity
-                </button>
-              </div>
-
-              {/* Dashboard Tab */}
-              {adminActiveTab === 'dashboard' && (
-                <div className="admin-dashboard">
-                  <h3>System Overview</h3>
+          </div>
+        </div>
+        {/* END OF SYSTEM ACCESS CONTROL PANEL */}
                   <div className="dashboard-cards">
                     <div className="dashboard-card">
                       <h4>💊 Medications</h4>
