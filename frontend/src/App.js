@@ -2337,7 +2337,7 @@ const updateSystemSetting = async (key, value) => {
         </div>
       )}
 
-            {/* Admin Panel Modal */}
+              {/* Admin Panel Modal */}
       {showAdminPanel && (
         <div className="modal-overlay">
           <div className="modal-content extra-large-modal">
@@ -2368,7 +2368,7 @@ const updateSystemSetting = async (key, value) => {
                 <div className="admin-dashboard">
                   <h3>System Overview</h3>
                   
-                  {/* SYSTEM ACCESS CONTROL PANEL - MOVED INSIDE ADMIN PANEL */}
+                  {/* SYSTEM ACCESS CONTROL PANEL */}
                   <div className="system-controls" style={{border: '2px solid #dc3545', padding: '15px', borderRadius: '8px', margin: '10px 0', background: '#fff5f5'}}>
                     <h3>🔐 SYSTEM ACCESS CONTROL</h3>
                     <p style={{color: '#dc3545', fontSize: '14px'}}>Control who can access the system</p>
@@ -2446,9 +2446,9 @@ const updateSystemSetting = async (key, value) => {
                       </div>
                     </div>
                   </div>
-                  {/* END OF SYSTEM ACCESS CONTROL PANEL */}
 
                   <div className="dashboard-cards">
+                    <div className="dashboard-card">
                       <h4>💊 Medications</h4>
                       <p className="card-number">{adminStatistics.medicationsCount || 0}</p>
                       <p>Total drugs in database</p>
