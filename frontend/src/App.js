@@ -2337,88 +2337,118 @@ const updateSystemSetting = async (key, value) => {
         </div>
       )}
 
-      {/* Admin Panel Modal */}
-      {/* SYSTEM ACCESS CONTROL PANEL */}
-        <div className="system-controls" style={{border: '2px solid #dc3545', padding: '15px', borderRadius: '8px', margin: '10px 0', background: '#fff5f5'}}>
-          <h3>🔐 SYSTEM ACCESS CONTROL</h3>
-          <p style={{color: '#dc3545', fontSize: '14px'}}>Control who can access the system</p>
-          
-          <div style={{margin: '15px 0'}}>
-            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-              <input
-                type="checkbox"
-                checked={systemSettings.system_enabled === 'true'}
-                onChange={(e) => updateSystemSetting('system_enabled', e.target.checked)}
-              />
-              <span style={{fontWeight: 'bold', color: systemSettings.system_enabled === 'true' ? 'green' : 'red'}}>
-                {systemSettings.system_enabled === 'true' ? '✅ SYSTEM ENABLED' : '🚫 SYSTEM DISABLED'}
-              </span>
-            </label>
-            <small style={{display: 'block', marginLeft: '30px', color: '#666'}}>
-              Master switch - when disabled, only you (mahmoud_abdelkader) can login
-            </small>
-          </div>
-        
-          <div style={{margin: '15px 0'}}>
-            <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-              <input
-                type="checkbox"
-                checked={systemSettings.maintenance_mode === 'true'}
-                onChange={(e) => updateSystemSetting('maintenance_mode', e.target.checked)}
-              />
-              <span style={{fontWeight: 'bold', color: systemSettings.maintenance_mode === 'true' ? 'orange' : 'green'}}>
-                {systemSettings.maintenance_mode === 'true' ? '🔧 MAINTENANCE MODE' : '✅ NORMAL MODE'}
-              </span>
-            </label>
-            <small style={{display: 'block', marginLeft: '30px', color: '#666'}}>
-              When enabled, only administrators can login
-            </small>
-          </div>
-        
-          <div style={{margin: '15px 0'}}>
-            <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>Allowed Users:</label>
-            <input
-              type="text"
-              value={systemSettings.allowed_users}
-              onChange={(e) => updateSystemSetting('allowed_users', e.target.value)}
-              placeholder="all or comma-separated usernames"
-              style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px'}}
-            />
-            <small style={{color: '#666'}}>
-              Enter "all" to allow everyone, or specific usernames like "user1,user2,user3"
-            </small>
-          </div>
-        
-          <div style={{marginTop: '20px', padding: '10px', background: '#f8f9fa', borderRadius: '5px'}}>
-            <h4>Quick Actions:</h4>
-            <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
-              <button 
-                onClick={() => updateSystemSetting('system_enabled', false)}
-                style={{padding: '8px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                🚫 Disable System for Everyone
-              </button>
-              <button 
-                onClick={() => updateSystemSetting('system_enabled', true)}
-                style={{padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                ✅ Enable System for Everyone
-              </button>
-              <button 
-                onClick={() => {
-                  updateSystemSetting('maintenance_mode', true);
-                  updateSystemSetting('allowed_users', 'mahmoud_abdelkader');
-                }}
-                style={{padding: '8px 12px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
-              >
-                🔧 Enter Maintenance Mode
-              </button>
+            {/* Admin Panel Modal */}
+      {showAdminPanel && (
+        <div className="modal-overlay">
+          <div className="modal-content extra-large-modal">
+            <div className="modal-header">
+              <h2>👑 System Administration Panel</h2>
+              <button className="close-button" onClick={closeAdminPanel}>✕</button>
             </div>
-          </div>
-        </div>
-        {/* END OF SYSTEM ACCESS CONTROL PANEL */}
+
+            <div className="modal-body">
+              {/* Admin Navigation Tabs */}
+              <div className="admin-tabs">
+                <button className={`admin-tab ${adminActiveTab === "dashboard" ? "active" : ""}`} onClick={() => setAdminActiveTab("dashboard")}>
+                  📊 Dashboard
+                </button>
+                <button className={`admin-tab ${adminActiveTab === "users" ? "active" : ""}`} onClick={() => setAdminActiveTab("users")}>
+                  👥 User Management
+                </button>
+                <button className={`admin-tab ${adminActiveTab === "statistics" ? "active" : ""}`} onClick={() => setAdminActiveTab("statistics")}>
+                  📈 Statistics
+                </button>
+                <button className={`admin-tab ${adminActiveTab === "activity" ? "active" : ""}`} onClick={() => setAdminActiveTab("activity")}>
+                  🔄 Recent Activity
+                </button>
+              </div>
+
+              {/* Dashboard Tab */}
+              {adminActiveTab === "dashboard" && (
+                <div className="admin-dashboard">
+                  <h3>System Overview</h3>
+                  
+                  {/* SYSTEM ACCESS CONTROL PANEL - MOVED INSIDE ADMIN PANEL */}
+                  <div className="system-controls" style={{border: '2px solid #dc3545', padding: '15px', borderRadius: '8px', margin: '10px 0', background: '#fff5f5'}}>
+                    <h3>🔐 SYSTEM ACCESS CONTROL</h3>
+                    <p style={{color: '#dc3545', fontSize: '14px'}}>Control who can access the system</p>
+                    
+                    <div style={{margin: '15px 0'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                        <input
+                          type="checkbox"
+                          checked={systemSettings.system_enabled === 'true'}
+                          onChange={(e) => updateSystemSetting('system_enabled', e.target.checked)}
+                        />
+                        <span style={{fontWeight: 'bold', color: systemSettings.system_enabled === 'true' ? 'green' : 'red'}}>
+                          {systemSettings.system_enabled === 'true' ? '✅ SYSTEM ENABLED' : '🚫 SYSTEM DISABLED'}
+                        </span>
+                      </label>
+                      <small style={{display: 'block', marginLeft: '30px', color: '#666'}}>
+                        Master switch - when disabled, only you (mahmoud_abdelkader) can login
+                      </small>
+                    </div>
+                  
+                    <div style={{margin: '15px 0'}}>
+                      <label style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                        <input
+                          type="checkbox"
+                          checked={systemSettings.maintenance_mode === 'true'}
+                          onChange={(e) => updateSystemSetting('maintenance_mode', e.target.checked)}
+                        />
+                        <span style={{fontWeight: 'bold', color: systemSettings.maintenance_mode === 'true' ? 'orange' : 'green'}}>
+                          {systemSettings.maintenance_mode === 'true' ? '🔧 MAINTENANCE MODE' : '✅ NORMAL MODE'}
+                        </span>
+                      </label>
+                      <small style={{display: 'block', marginLeft: '30px', color: '#666'}}>
+                        When enabled, only administrators can login
+                      </small>
+                    </div>
+                  
+                    <div style={{margin: '15px 0'}}>
+                      <label style={{display: 'block', marginBottom: '5px', fontWeight: 'bold'}}>Allowed Users:</label>
+                      <input
+                        type="text"
+                        value={systemSettings.allowed_users}
+                        onChange={(e) => updateSystemSetting('allowed_users', e.target.value)}
+                        placeholder="all or comma-separated usernames"
+                        style={{width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px'}}
+                      />
+                      <small style={{color: '#666'}}>
+                        Enter "all" to allow everyone, or specific usernames like "user1,user2,user3"
+                      </small>
+                    </div>
+                  
+                    <div style={{marginTop: '20px', padding: '10px', background: '#f8f9fa', borderRadius: '5px'}}>
+                      <h4>Quick Actions:</h4>
+                      <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap'}}>
+                        <button 
+                          onClick={() => updateSystemSetting('system_enabled', false)}
+                          style={{padding: '8px 12px', background: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+                        >
+                          🚫 Disable System for Everyone
+                        </button>
+                        <button 
+                          onClick={() => updateSystemSetting('system_enabled', true)}
+                          style={{padding: '8px 12px', background: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+                        >
+                          ✅ Enable System for Everyone
+                        </button>
+                        <button 
+                          onClick={() => {
+                            updateSystemSetting('maintenance_mode', true);
+                            updateSystemSetting('allowed_users', 'mahmoud_abdelkader');
+                          }}
+                          style={{padding: '8px 12px', background: '#fd7e14', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer'}}
+                        >
+                          🔧 Enter Maintenance Mode
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  {/* END OF SYSTEM ACCESS CONTROL PANEL */}
+
                   <div className="dashboard-cards">
-                    <div className="dashboard-card">
                       <h4>💊 Medications</h4>
                       <p className="card-number">{adminStatistics.medicationsCount || 0}</p>
                       <p>Total drugs in database</p>
