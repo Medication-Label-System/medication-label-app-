@@ -250,19 +250,6 @@ function App() {
   };
 
   // ==================== BASKET MANAGEMENT ====================
-  const loadBasket = () => {
-    try {
-      const savedBasket = localStorage.getItem('medicationBasket');
-      if (savedBasket) {
-        const basket = JSON.parse(savedBasket);
-        setBasket(basket);
-      }
-    } catch (error) {
-      console.error("Error loading basket:", error);
-      setBasket([]);
-    }
-  };
-
   const addToBasket = async (medication) => {
     if (!patients) {
       alert("Please search and select a patient first!");
@@ -480,7 +467,7 @@ function App() {
     }
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('patients_correct')
         .insert([{
           PatientID: newPatientData.patientId,
@@ -654,7 +641,7 @@ function App() {
     }
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tblDrugs')
         .insert([{
           DrugName: customDrugData.drugName,
@@ -825,7 +812,7 @@ function App() {
     }
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('tblUsers')
         .insert([{
           UserName: newUserData.username,
