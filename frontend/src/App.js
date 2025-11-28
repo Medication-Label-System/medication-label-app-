@@ -81,6 +81,7 @@ function App() {
   useEffect(() => {
     loadMedications();
     loadLocalAuditLogs();
+	loadBasket();
   }, []);
 
   // ==================== AUTHENTICATION ====================
@@ -166,24 +167,45 @@ function App() {
     setActiveTab("medications");
     setIsAdmin(false);
   };
+  
+  // ==================== BASKET MANAGEMENT ====================
+const loadBasket = () => {
+  try {
+    const savedBasket = localStorage.getItem('medicationBasket');
+    if (savedBasket) {
+      const basketData = JSON.parse(savedBasket);
+      setBasket(basketData);
+      console.log("Loaded basket from localStorage:", basketData.length, "items");
+    }
+  } catch (error) {
+    console.error("Error loading basket:", error);
+    setBasket([]);
+  }
+};
 
   // ==================== MEDICATIONS ====================
   const loadMedications = async () => {
-    try {
-      const { data: medications, error } = await supabase
-        .from('tblDrugs')
-        .select('*')
-        .order('DrugName');
+  try {
+    const { data: medications, error } = await supabase
+      .from('tblDrugs')
+      .select('*')
+      .order('DrugName');
 
-      if (error) throw error;
-      
-      setMedications(medications || []);
-      console.log("Loaded medications from Supabase:", medications.length);
-    } catch (error) {
-      console.error("Error loading medications:", error);
-      setMedications([]);
-    }
-  };
+    if (error) throw error;
+    
+    // Map the database column names to consistent frontend names
+    const mappedMedications = medications.map(med => ({
+      ...med,
+      Instruction: med.InstructionText || '' // Map InstructionText to Instruction for frontend
+    }));
+    
+    setMedications(mappedMedications || []);
+    console.log("Loaded medications from Supabase:", medications.length);
+  } catch (error) {
+    console.error("Error loading medications:", error);
+    setMedications([]);
+  }
+};
 
   const loadSystemSettings = async () => {
     try {
@@ -224,26 +246,26 @@ function App() {
   };
 
   const filterMedications = (medications, searchTerm) => {
-    if (!searchTerm.trim()) return medications;
+  if (!searchTerm.trim()) return medications;
 
-    const searchText = searchTerm.trim().toLowerCase();
+  const searchText = searchTerm.trim().toLowerCase();
 
-    const filtered = medications.filter((medication) => {
-      const drugName = (medication.DrugName || "").toLowerCase();
-      const instruction = (medication.Instruction || "").toLowerCase();
-      const activeIngredient = (
-        medication.active_ingredient || ""
-      ).toLowerCase();
+  const filtered = medications.filter((medication) => {
+    const drugName = (medication.DrugName || "").toLowerCase();
+    const instruction = (medication.Instruction || medication.InstructionText || "").toLowerCase();
+    const activeIngredient = (
+      medication.active_ingredient || ""
+    ).toLowerCase();
 
-      const nameMatch = drugName.includes(searchText);
-      const instructionMatch = instruction.includes(searchText);
-      const ingredientMatch = activeIngredient.includes(searchText);
+    const nameMatch = drugName.includes(searchText);
+    const instructionMatch = instruction.includes(searchText);
+    const ingredientMatch = activeIngredient.includes(searchText);
 
-      return nameMatch || instructionMatch || ingredientMatch;
-    });
+    return nameMatch || instructionMatch || ingredientMatch;
+  });
 
-    return filtered;
-  };
+  return filtered;
+};
 
   const createUniqueKey = (medication, index) => {
     return `${medication.DrugName}-${index}-${medication.InternationalCode || ""}`;
@@ -251,36 +273,36 @@ function App() {
 
   // ==================== BASKET MANAGEMENT ====================
   const addToBasket = async (medication) => {
-    if (!patients) {
-      alert("Please search and select a patient first!");
-      return;
-    }
+  if (!patients) {
+    alert("Please search and select a patient first!");
+    return;
+  }
 
-    const instructionToUse = useCustomInstruction && customInstruction 
-      ? customInstruction 
-      : medication.Instruction;
+  const instructionToUse = useCustomInstruction && customInstruction 
+    ? customInstruction 
+    : medication.Instruction;
 
-    const newItem = {
-      TempID: Date.now().toString(),
-      DrugName: medication.DrugName,
-      InstructionText: instructionToUse,
-      printQuantity: 1,
-      expiryDate: "",
-      expiryMonth: "",
-      expiryYear: ""
-    };
-
-    const updatedBasket = [...basket, newItem];
-    setBasket(updatedBasket);
-    localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
-
-    if (useCustomInstruction) {
-      setCustomInstruction("");
-      setUseCustomInstruction(false);
-    }
-
-    alert(`Added ${medication.DrugName} to basket`);
+  const newItem = {
+    TempID: Date.now().toString(),
+    DrugName: medication.DrugName,
+    InstructionText: instructionToUse,
+    printQuantity: 1,
+    expiryDate: "",
+    expiryMonth: "",
+    expiryYear: ""
   };
+
+  const updatedBasket = [...basket, newItem];
+  setBasket(updatedBasket);
+  localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
+
+  if (useCustomInstruction) {
+    setCustomInstruction("");
+    setUseCustomInstruction(false);
+  }
+
+  alert(`Added ${medication.DrugName} to basket`);
+};
 
   const updateMedicationQuantity = (tempId, quantity) => {
     const newQuantity = Math.max(1, Math.min(10, parseInt(quantity) || 1));
@@ -645,7 +667,7 @@ function App() {
         .from('tblDrugs')
         .insert([{
           DrugName: customDrugData.drugName,
-          Instruction: customDrugData.instructionText || 'Take as directed',
+          instructionText: customDrugData.instructionText || 'Take as directed',
           active_ingredient: customDrugData.activeIngredient || '',
           InternationalCode: customDrugData.internationalCode || ''
         }]);
@@ -1057,271 +1079,317 @@ function App() {
         }
 
         labelsHTML += `
-            <div class="label-container">
-              <div class="label-content">
-                <div class="label-header">
-                  <div class="logo-container">
-                    <img src="${logoUrl}" alt="Pharmacy Logo" class="logo-image" onerror="this.style.display='none'" />
+              <div class="label-container">
+                <div class="label-content">
+                  <div class="label-header">
+                    <div class="logo-container">
+                      <img src="${logoUrl}" alt="Pharmacy Logo" class="logo-image" onerror="this.style.display='none'" />
+                    </div>
+                    <div class="patient-info-header">
+                      <div class="mrn-section">
+                        M.R.N: ${patients.fullId}
+                      </div>
+                      <div class="header-separator"></div>
+                      <div class="national-id-section">
+                        <span class="national-id-label">D.O.B</span>
+                        <span class="national-id-number">${patients.NationalID || "N/A"}</span>
+                      </div>
+                    </div>
                   </div>
-                  <div class="patient-id">
-                    M.R.N: ${patients.fullId}
+                  <div class="patient-name">
+                    <strong>${patients.PatientName}</strong>
                   </div>
-                </div>
-                <div class="patient-name">
-                  <strong>${patients.PatientName}</strong>
-                </div>
-                <div class="drug-name">
-                  <strong>${item.DrugName}</strong>
-                </div>
-                <div class="instructions">
-                  <span>${item.InstructionText}</span>
-                </div>
-                <div class="label-footer">
-                  <div class="footer-line">
-                    <span>Exp: ${displayExpiry}</span>
-                    <span>By: Dr Mahmoud</span>
+                  <div class="drug-name">
+                    <strong>${item.DrugName}</strong>
                   </div>
-                  <div class="footer-date">
-                    <span>${currentDate}</span>
+                  <div class="instructions">
+                    <span>${item.InstructionText}</span>
+                  </div>
+                  <div class="label-footer">
+                    <div class="footer-line">
+                      <span>Exp: ${displayExpiry}</span>
+                      <span>By: ${user.fullName}</span>
+                    </div>
+                    <div class="footer-date">
+                      <span>${currentDate}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          `;
+            `;
       }
     });
 
     printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>Medication Labels</title>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-
-            body {
-              margin: 0 !important;
-              padding: 0 !important;
-              background: white;
-              font-family: "Arial Black", "Arial", sans-serif;
-              display: block !important;
-            }
-
-            .label-container {
-              width: 50mm !important;
-              height: 30mm !important;
-              border: 1px solid #000;
-              padding: 0.2mm;
-              margin: 0 !important;
-              page-break-inside: avoid !important;
-              break-inside: avoid !important;
-              display: block !important;
-              background: white;
-            }
-
-            .label-content {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              height: 100%;
-            }
-
-            .label-header {
-              height: 0.6cm;
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              padding-bottom: 0.2mm;
-              border-bottom: 1px solid #000;
-            }
-
-            .logo-container {
-              flex: 1;
-              display: flex;
-              align-items: center;
-            }
-
-            .logo-image {
-              max-height: 0.6cm !important;
-              max-width: 90% !important;
-              width: auto;
-              object-fit: contain;
-            }
-
-            .patient-id {
-              flex: 1;
-              text-align: right;
-              font-size: 7pt;
-              font-weight: bold;
-            }
-
-            .patient-name {
-              height: 0.35cm;
-              text-align: center;
-              margin: 0.2mm 0;
-              padding: 0.2mm 0;
-              line-height: 1;
-              overflow: hidden;
-              border-bottom: 1px solid #000;
-              font-size: 7.5pt;
-              font-weight: 900;
-              font-family: "Arial Black", "Arial", sans-serif;
-            }
-
-            .patient-name strong {
-              display: block;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .drug-name {
-              height: 0.35cm;
-              text-align: center;
-              margin: 0.2mm 0;
-              padding: 0.2mm 0;
-              line-height: 1;
-              overflow: hidden;
-              border-bottom: 1px solid #000;
-              font-size: 7pt;
-              font-weight: 900;
-              font-family: "Arial Black", "Arial", sans-serif;
-            }
-
-            .drug-name strong {
-              display: block;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-            }
-
-            .instructions {
-              flex: 1;
-              min-height: 0.85cm;
-              margin: 0.2mm 0;
-              padding: 0.4mm;
-              line-height: 1.3;
-              overflow: hidden;
-              border-bottom: 1px solid #000;
-              font-size: 7pt;
-              font-weight: bold;
-              font-family: "Arial", sans-serif;
-            }
-
-            .instructions span {
-              display: block;
-              word-wrap: break-word;
-              line-height: 1.1;
-              height: 100%;
-              overflow: hidden;
-              text-align: center;
-              direction: rtl;
-              font-weight: bold;
-            }
-
-            .label-footer {
-              height: 0.3cm;
-              font-size: 3.5pt;
-              font-weight: bold;
-              display: flex;
-              flex-direction: column;
-              justify-content: space.000000-1b121et11ween;
-              padding-top: 0.1mm;
-            }
-
-            .footer-line {
-              display: flex;
-              justify-content: space-between;
-            }
-
-            .footer-date {
-              text-align: center;
-              font-weight: bold;
-            }
-
-            @media print {
-              @page {
-                margin: 0 !important;
-                padding: 0 !important;
-                size: 50mm 30mm !important;
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Medication Labels</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
               }
 
               body {
                 margin: 0 !important;
                 padding: 0 !important;
+                background: white;
+                font-family: "Arial Black", "Arial", sans-serif;
                 display: block !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
               }
 
               .label-container {
                 width: 50mm !important;
                 height: 30mm !important;
+                border: 1px solid #000;
+                padding: 0.2mm;
                 margin: 0 !important;
-                padding: 0.2mm !important;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 display: block !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                background: white;
               }
 
-              .label-container, .label-container * {
-                visibility: visible;
-                color: black !important;
-                background: white !important;
+              .label-content {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                height: 100%;
               }
 
-              body * {
-                visibility: hidden;
+              .label-header {
+                height: 0.7cm;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding-bottom: 0.2mm;
+                border-bottom: 1px solid #000;
               }
 
-              .label-container {
-                position: relative;
-                left: 0;
-                top: 0;
-              }
-            }
-
-            @media print and (color) {
-              .label-container {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-                filter: contrast(120%) !important;
+              .logo-container {
+                flex: 0 0 45%;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                height: 100%;
               }
 
-              .patient-name strong,
-              .drug-name strong,
+              .logo-image {
+                max-height: 0.5cm !important;
+                max-width: 100% !important;
+                width: auto;
+                object-fit: contain;
+              }
+
+              .patient-info-header {
+                flex: 0 0 55%;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                text-align: right;
+                justify-content: space-between;
+                height: 100%;
+                padding: 0.1mm 0;
+              }
+
+              .mrn-section {
+                font-size: 5.5pt;
+                font-weight: bold;
+                line-height: 1.1;
+                margin-bottom: 0.5mm;
+              }
+
+              .header-separator {
+                width: 100%;
+                height: 0.3px;
+                background-color: #666;
+                margin: 0.5mm 0;
+              }
+
+              .national-id-section {
+                font-size: 5.5pt;
+                font-weight: bold;
+                line-height: 1.1;
+                display: flex;
+                gap: 3px;
+                margin-top: 0.5mm;
+              }
+
+              .national-id-label {
+                font-weight: bold;
+                color: #333;
+              }
+
+              .national-id-number {
+                font-weight: normal;
+                color: #000;
+              }
+
+              .patient-name {
+                height: 0.35cm;
+                text-align: center;
+                margin: 0.2mm 0;
+                padding: 0.2mm 0;
+                line-height: 1;
+                overflow: hidden;
+                border-bottom: 1px solid #000;
+                font-size: 7.5pt;
+                font-weight: 900;
+                font-family: "Arial Black", "Arial", sans-serif;
+              }
+
+              .patient-name strong {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+
+              .drug-name {
+                height: 0.35cm;
+                text-align: center;
+                margin: 0.2mm 0;
+                padding: 0.2mm 0;
+                line-height: 1;
+                overflow: hidden;
+                border-bottom: 1px solid #000;
+                font-size: 7pt;
+                font-weight: 900;
+                font-family: "Arial Black", "Arial", sans-serif;
+              }
+
+              .drug-name strong {
+                display: block;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+              }
+
+              .instructions {
+                flex: 1;
+                min-height: 0.95cm;
+                margin: 0.2mm 0;
+                padding: 0.4mm;
+                line-height: 1.3;
+                overflow: hidden;
+                border-bottom: 1px solid #000;
+                font-size: 7pt;
+                font-weight: bold;
+                font-family: "Arial", sans-serif;
+              }
+
               .instructions span {
-                color: #000000 !important;
+                display: block;
+                word-wrap: break-word;
+                line-height: 1.1;
+                height: 100%;
+                overflow: hidden;
+                text-align: center;
+                direction: rtl;
+                font-weight: bold;
               }
-            }
-          </style>
-        </head>
-        <body>
-          ${labelsHTML}
-          <script>
-            window.onload = function() {
-              setTimeout(function() {
-                window.print();
-                setTimeout(function() {
-                  window.close();
-                }, 100);
-              }, 100);
-            }
 
-            window.onafterprint = function() {
-              window.close();
-            };
-          </script>
-        </body>
-        </html>
-      `);
+              .label-footer {
+                height: 0.3cm;
+                font-size: 3.5pt;
+                font-weight: bold;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding-top: 0.1mm;
+              }
+
+              .footer-line {
+                display: flex;
+                justify-content: space-between;
+              }
+
+              .footer-date {
+                text-align: center;
+                font-weight: bold;
+              }
+
+              @media print {
+                @page {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  size: 50mm 30mm !important;
+                }
+
+                body {
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  display: block !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+
+                .label-container {
+                  width: 50mm !important;
+                  height: 30mm !important;
+                  margin: 0 !important;
+                  padding: 0.2mm !important;
+                  page-break-inside: avoid !important;
+                  break-inside: avoid !important;
+                  display: block !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+
+                .label-container, .label-container * {
+                  visibility: visible;
+                  color: black !important;
+                  background: white !important;
+                }
+
+                body * {
+                  visibility: hidden;
+                }
+
+                .label-container {
+                  position: relative;
+                  left: 0;
+                  top: 0;
+                }
+              }
+
+              @media print and (color) {
+                .label-container {
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                  filter: contrast(120%) !important;
+                }
+
+                .patient-name strong,
+                .drug-name strong,
+                .instructions span {
+                  color: #000000 !important;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            ${labelsHTML}
+            <script>
+              window.onload = function() {
+                setTimeout(function() {
+                  window.print();
+                  setTimeout(function() {
+                    window.close();
+                  }, 100);
+                }, 100);
+              }
+
+              window.onafterprint = function() {
+                window.close();
+              };
+            </script>
+          </body>
+          </html>
+        `);
     printWindow.document.close();
   };
 
@@ -1634,7 +1702,7 @@ function App() {
                     >
                       <div className="medication-info">
                         <strong>{medication.DrugName}</strong>
-                        <p>{medication.Instruction}</p>
+                        <p>{medication.InstructionText}</p>
                         {medication.active_ingredient && (
                           <small style={{ color: "#666", fontStyle: "italic" }}>
                             المادة الفعالة: {medication.active_ingredient}
