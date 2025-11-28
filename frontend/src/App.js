@@ -83,8 +83,6 @@ function App() {
 
   // Load medications on startup
   useEffect(() => {
-    loadMedications();
-    loadBasket();
     loadLocalAuditLogs();
   }, []);
 
