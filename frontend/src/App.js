@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { supabase } from "./supabaseClient";
 import "./App.css";
 
 import pharmacyLogo from "./assets/logo.png";
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || "https://982f1e1a-2983-404d-a359-a517bdb8eff0-00-1tul3hqr1nf9g.picard.replit.dev";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,9 +16,9 @@ function App() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [activeTab, setActiveTab] = useState("medications");
   const [systemSettings, setSystemSettings] = useState({
-  system_enabled: 'true',
-  maintenance_mode: 'false', 
-  allowed_users: 'all'
+    system_enabled: 'true',
+    maintenance_mode: 'false', 
+    allowed_users: 'all'
   });
 
   // Custom Drug State
@@ -82,83 +79,84 @@ function App() {
 
   // Load medications on startup
   useEffect(() => {
+    loadMedications();
     loadLocalAuditLogs();
   }, []);
 
   // ==================== AUTHENTICATION ====================
   const handleLogin = async (e) => {
-  e.preventDefault();
-  
-  try {
-    // 🔐 CHECK 1: See if system is enabled (YOUR KILL SWITCH)
-    const { data: settings, error: settingsError } = await supabase
-      .from('system_settings')
-      .select('*')
-      .in('setting_key', ['system_enabled', 'maintenance_mode', 'allowed_users']);
-  
-    if (settingsError) {
-      console.error('Settings error:', settingsError);
-      // Continue with login if settings table doesn't exist yet
-    } else {
-      const systemEnabled = settings?.find(s => s.setting_key === 'system_enabled')?.setting_value === 'true';
-      const maintenanceMode = settings?.find(s => s.setting_key === 'maintenance_mode')?.setting_value === 'true';
-      const allowedUsers = settings?.find(s => s.setting_key === 'allowed_users')?.setting_value;
-  
-      // 🚫 SYSTEM DISABLED - Only you (mahmoud_abdelkader) can login
-      if (!systemEnabled && loginData.username !== 'mahmoud_abdelkader') {
-        alert('🚫 System is currently disabled by administrator. Please try again later.');
-        return;
-      }
-  
-      // 🔧 MAINTENANCE MODE - Only you can login
-      if (maintenanceMode && loginData.username !== 'mahmoud_abdelkader') {
-        alert('🔧 System is in maintenance mode. Only administrators can login.');
-        return;
-      }
-  
-      // 👥 RESTRICTED USERS - Only specific users can login
-      if (allowedUsers && allowedUsers !== 'all') {
-        const allowedList = allowedUsers.split(',').map(u => u.trim());
-        if (!allowedList.includes(loginData.username) && loginData.username !== 'mahmoud_abdelkader') {
-          alert('🚫 Your account is not currently authorized to access the system.');
+    e.preventDefault();
+    
+    try {
+      // 🔐 CHECK 1: See if system is enabled (YOUR KILL SWITCH)
+      const { data: settings, error: settingsError } = await supabase
+        .from('system_settings')
+        .select('*')
+        .in('setting_key', ['system_enabled', 'maintenance_mode', 'allowed_users']);
+    
+      if (settingsError) {
+        console.error('Settings error:', settingsError);
+        // Continue with login if settings table doesn't exist yet
+      } else {
+        const systemEnabled = settings?.find(s => s.setting_key === 'system_enabled')?.setting_value === 'true';
+        const maintenanceMode = settings?.find(s => s.setting_key === 'maintenance_mode')?.setting_value === 'true';
+        const allowedUsers = settings?.find(s => s.setting_key === 'allowed_users')?.setting_value;
+    
+        // 🚫 SYSTEM DISABLED - Only you (mahmoud_abdelkader) can login
+        if (!systemEnabled && loginData.username !== 'mahmoud_abdelkader') {
+          alert('🚫 System is currently disabled by administrator. Please try again later.');
           return;
         }
-      }
-    }
-  
-    // ✅ CONTINUE NORMAL LOGIN
-    const { data: users, error } = await supabase
-       .from('tblUsers')
-       .select('*')
-       .eq('UserName', loginData.username)
-       .eq('Password', loginData.password)
-       .eq('IsActive', 'true');  // ← Use string 'true' instead of boolean true
-  
-    if (error || !users || users.length === 0) {
-      alert('Invalid username or password');
-      return;
-    }
-  
-    const user = users[0];
-    setUser({
-      id: user.UserID,
-      username: user.UserName,
-      fullName: user.FullName,
-      accessLevel: user.AccessLevel
-    });
-  
-    // Check if admin
-    if (user.UserName === "mahmoud_abdelkader" && loginData.password === "12345") {
-      setIsAdmin(true);
-      alert(`👑 Welcome System Administrator ${user.FullName}! Admin privileges activated.`);
-    } else {
-      alert(`✅ Welcome ${user.FullName}!`);
-    }
     
-  } catch (error) {
-    alert('Login error: ' + error.message);
-  }
- };
+        // 🔧 MAINTENANCE MODE - Only you can login
+        if (maintenanceMode && loginData.username !== 'mahmoud_abdelkader') {
+          alert('🔧 System is in maintenance mode. Only administrators can login.');
+          return;
+        }
+    
+        // 👥 RESTRICTED USERS - Only specific users can login
+        if (allowedUsers && allowedUsers !== 'all') {
+          const allowedList = allowedUsers.split(',').map(u => u.trim());
+          if (!allowedList.includes(loginData.username) && loginData.username !== 'mahmoud_abdelkader') {
+            alert('🚫 Your account is not currently authorized to access the system.');
+            return;
+          }
+        }
+      }
+    
+      // ✅ CONTINUE NORMAL LOGIN
+      const { data: users, error } = await supabase
+        .from('tblUsers')
+        .select('*')
+        .eq('UserName', loginData.username)
+        .eq('Password', loginData.password)
+        .eq('IsActive', 'true');  // ← Use string 'true' instead of boolean true
+    
+      if (error || !users || users.length === 0) {
+        alert('Invalid username or password');
+        return;
+      }
+    
+      const user = users[0];
+      setUser({
+        id: user.UserID,
+        username: user.UserName,
+        fullName: user.FullName,
+        accessLevel: user.AccessLevel
+      });
+    
+      // Check if admin
+      if (user.UserName === "mahmoud_abdelkader" && loginData.password === "12345") {
+        setIsAdmin(true);
+        alert(`👑 Welcome System Administrator ${user.FullName}! Admin privileges activated.`);
+      } else {
+        alert(`✅ Welcome ${user.FullName}!`);
+      }
+      
+    } catch (error) {
+      alert('Login error: ' + error.message);
+    }
+  };
 
   const handleLogout = () => {
     setUser(null);
@@ -172,53 +170,58 @@ function App() {
   // ==================== MEDICATIONS ====================
   const loadMedications = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/medications`);
-      setMedications(response.data.medications);
-      console.log("Loaded medications:", response.data.medications.length);
+      const { data: medications, error } = await supabase
+        .from('tblDrugs')
+        .select('*')
+        .order('DrugName');
+
+      if (error) throw error;
+      
+      setMedications(medications || []);
+      console.log("Loaded medications from Supabase:", medications.length);
     } catch (error) {
       console.error("Error loading medications:", error);
+      setMedications([]);
     }
   };
-  
-  // Add these functions with your other admin functions:
 
-const loadSystemSettings = async () => {
-  try {
-    const { data: settings, error } = await supabase
-      .from('system_settings')
-      .select('*');
-    
-    if (!error && settings) {
-      const settingsObj = {};
-      settings.forEach(setting => {
-        settingsObj[setting.setting_key] = setting.setting_value;
-      });
-      setSystemSettings(settingsObj);
+  const loadSystemSettings = async () => {
+    try {
+      const { data: settings, error } = await supabase
+        .from('system_settings')
+        .select('*');
+      
+      if (!error && settings) {
+        const settingsObj = {};
+        settings.forEach(setting => {
+          settingsObj[setting.setting_key] = setting.setting_value;
+        });
+        setSystemSettings(settingsObj);
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
     }
-  } catch (error) {
-    console.error('Error loading settings:', error);
-  }
-};
+  };
 
-const updateSystemSetting = async (key, value) => {
-  try {
-    const { error } = await supabase
-      .from('system_settings')
-      .update({ 
-        setting_value: value.toString(),
-        updated_by: user.username,
-        updated_at: new Date().toISOString()
-      })
-      .eq('setting_key', key);
+  const updateSystemSetting = async (key, value) => {
+    try {
+      const { error } = await supabase
+        .from('system_settings')
+        .update({ 
+          setting_value: value.toString(),
+          updated_by: user.username,
+          updated_at: new Date().toISOString()
+        })
+        .eq('setting_key', key);
 
-    if (error) throw error;
-    
-    setSystemSettings(prev => ({ ...prev, [key]: value.toString() }));
-    alert('✅ Setting updated successfully!');
-  } catch (error) {
-    alert('❌ Error updating setting: ' + error.message);
-  }
-};
+      if (error) throw error;
+      
+      setSystemSettings(prev => ({ ...prev, [key]: value.toString() }));
+      alert('✅ Setting updated successfully!');
+    } catch (error) {
+      alert('❌ Error updating setting: ' + error.message);
+    }
+  };
 
   const filterMedications = (medications, searchTerm) => {
     if (!searchTerm.trim()) return medications;
@@ -247,23 +250,16 @@ const updateSystemSetting = async (key, value) => {
   };
 
   // ==================== BASKET MANAGEMENT ====================
-  const loadBasket = async () => {
+  const loadBasket = () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/basket`);
-      const basketWithExpiry = response.data.basket.map((item) => {
-        const expiryDate = item.expiryDate || "";
-        const [month, year] = expiryDate.split("/");
-        return {
-          ...item,
-          expiryDate,
-          expiryMonth: month || "",
-          expiryYear: year || "",
-          printQuantity: item.printQuantity || 1,
-        };
-      });
-      setBasket(basketWithExpiry);
+      const savedBasket = localStorage.getItem('medicationBasket');
+      if (savedBasket) {
+        const basket = JSON.parse(savedBasket);
+        setBasket(basket);
+      }
     } catch (error) {
       console.error("Error loading basket:", error);
+      setBasket([]);
     }
   };
 
@@ -273,60 +269,48 @@ const updateSystemSetting = async (key, value) => {
       return;
     }
 
-    const instructionToUse =
-      useCustomInstruction && customInstruction
-        ? customInstruction
-        : medication.Instruction;
+    const instructionToUse = useCustomInstruction && customInstruction 
+      ? customInstruction 
+      : medication.Instruction;
 
-    try {
-      await axios.post(`${API_BASE_URL}/api/basket/add`, {
-        drugName: medication.DrugName,
-        instructionText: instructionToUse,
-        printQuantity: 1,
-      });
+    const newItem = {
+      TempID: Date.now().toString(),
+      DrugName: medication.DrugName,
+      InstructionText: instructionToUse,
+      printQuantity: 1,
+      expiryDate: "",
+      expiryMonth: "",
+      expiryYear: ""
+    };
 
-      loadBasket();
+    const updatedBasket = [...basket, newItem];
+    setBasket(updatedBasket);
+    localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
 
-      if (useCustomInstruction) {
-        setCustomInstruction("");
-        setUseCustomInstruction(false);
-      }
-
-      const message = useCustomInstruction
-        ? `Added ${medication.DrugName} with custom instruction`
-        : `Added ${medication.DrugName} to basket`;
-
-      alert(message);
-    } catch (error) {
-      alert("Error adding to basket: " + error.message);
+    if (useCustomInstruction) {
+      setCustomInstruction("");
+      setUseCustomInstruction(false);
     }
+
+    alert(`Added ${medication.DrugName} to basket`);
   };
 
-  const updateMedicationQuantity = async (tempId, quantity) => {
+  const updateMedicationQuantity = (tempId, quantity) => {
     const newQuantity = Math.max(1, Math.min(10, parseInt(quantity) || 1));
 
-    try {
-      await axios.put(`${API_BASE_URL}/api/basket/${tempId}/quantity`, {
-        printQuantity: newQuantity,
-      });
-
-      setBasket((prevBasket) =>
-        prevBasket.map((item) =>
-          item.TempID === tempId
-            ? { ...item, printQuantity: newQuantity }
-            : item,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating quantity:", error);
-      setBasket((prevBasket) =>
-        prevBasket.map((item) =>
-          item.TempID === tempId
-            ? { ...item, printQuantity: newQuantity }
-            : item,
-        ),
-      );
-    }
+    setBasket((prevBasket) =>
+      prevBasket.map((item) =>
+        item.TempID === tempId
+          ? { ...item, printQuantity: newQuantity }
+          : item,
+      ),
+    );
+    
+    // Update localStorage
+    const updatedBasket = basket.map(item => 
+      item.TempID === tempId ? { ...item, printQuantity: newQuantity } : item
+    );
+    localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
   };
 
   const handleExpiryMonthChange = (tempId, month) => {
@@ -363,16 +347,13 @@ const updateSystemSetting = async (key, value) => {
     );
   };
 
-  const removeFromBasket = async (tempId) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/api/basket/${tempId}`);
-      loadBasket();
-    } catch (error) {
-      alert("Error removing from basket: " + error.message);
-    }
+  const removeFromBasket = (tempId) => {
+    const updatedBasket = basket.filter(item => item.TempID !== tempId);
+    setBasket(updatedBasket);
+    localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
   };
 
-  const clearBasket = async () => {
+  const clearBasket = () => {
     if (basket.length === 0) {
       alert("Basket is already empty");
       return;
@@ -383,13 +364,9 @@ const updateSystemSetting = async (key, value) => {
         "Are you sure you want to clear all medications from the basket?",
       )
     ) {
-      try {
-        await axios.delete(`${API_BASE_URL}/api/basket`);
-        loadBasket();
-        alert("Basket cleared successfully");
-      } catch (error) {
-        alert("Error clearing basket: " + error.message);
-      }
+      setBasket([]);
+      localStorage.removeItem('medicationBasket');
+      alert("Basket cleared successfully");
     }
   };
 
@@ -401,18 +378,24 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/patients/search?patientId=${patientId}&year=${year}`,
-      );
-      if (response.data.success) {
-        setPatients({
-          ...response.data.patient,
-          fullId: response.data.fullId,
-        });
-      } else {
-        alert("Patient not found: " + response.data.message);
+      const { data: patient, error } = await supabase
+        .from('patients_correct')
+        .select('*')
+        .eq('PatientID', patientId)
+        .eq('Year', year)
+        .single();
+
+      if (error || !patient) {
+        alert("Patient not found");
         setPatients(null);
+        return;
       }
+
+      setPatients({
+        ...patient,
+        fullId: `${patient.PatientID}/${patient.Year}`
+      });
+      
     } catch (error) {
       alert("Error searching patient: " + error.message);
       setPatients(null);
@@ -421,54 +404,30 @@ const updateSystemSetting = async (key, value) => {
 
   const loadPatientsList = async (page = 1, search = '') => {
     try {
-      console.log('🔄 Loading patients list...');
-      const apiUrl = `${API_BASE_URL}/api/patients`;
-      console.log('📡 Making request to:', apiUrl);
-      console.log('🔧 Request params:', { page, limit: 20, search });
+      const from = (page - 1) * 20;
+      
+      let query = supabase
+        .from('patients_correct')
+        .select('*', { count: 'exact' });
 
-      const response = await axios.get(apiUrl, {
-        params: { page, limit: 20, search },
-        timeout: 10000
+      if (search) {
+        query = query.or(`PatientName.ilike.%${search}%,PatientID.ilike.%${search}%,NationalID.ilike.%${search}%`);
+      }
+
+      const { data: patients, error, count } = await query.range(from, from + 19);
+
+      if (error) throw error;
+
+      setPatientsList(patients || []);
+      setPatientsPagination({
+        page,
+        totalPages: Math.ceil(count / 20),
+        total: count
       });
-
-      console.log('✅ Patients API response received:', response.data);
-
-      if (response.data.success) {
-        console.log(`✅ Loaded ${response.data.patients.length} patients`);
-        setPatientsList(response.data.patients);
-        setPatientsPagination({
-          page: response.data.page,
-          totalPages: response.data.totalPages,
-          total: response.data.total
-        });
-      } else {
-        console.error('❌ API returned error:', response.data);
-        alert('Failed to load patients: ' + (response.data.message || 'Unknown error'));
-      }
+      
     } catch (error) {
-      console.error('❌ Error loading patients:', error);
-
-      if (error.code === 'NETWORK_ERROR' || error.code === 'ECONNREFUSED') {
-        console.error('🌐 Network error - backend might be down');
-        alert('Cannot connect to backend server. Please make sure the backend is running on port 3001.');
-      } else if (error.response) {
-        console.error('📋 Server response error:', error.response.status);
-        console.error('📋 Error data:', error.response.data);
-
-        if (error.response.status === 404) {
-          alert('Patients API endpoint not found (404). The backend routes might not be properly set up.');
-        } else if (error.response.status === 500) {
-          alert('Server error (500). Check backend console for details.');
-        } else {
-          alert(`Server error (${error.response.status}): ${error.response.data?.error || error.response.data?.message || 'Unknown error'}`);
-        }
-      } else if (error.request) {
-        console.error('📡 No response received - network issue');
-        alert('Network error: Could not connect to server. Please check your internet connection and ensure the backend is running.');
-      } else {
-        console.error('⚙️ Setup error:', error.message);
-        alert('Error: ' + error.message);
-      }
+      console.error("Error loading patients:", error);
+      setPatientsList([]);
     }
   };
 
@@ -521,20 +480,32 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/patients`, newPatientData);
+      const { data, error } = await supabase
+        .from('patients_correct')
+        .insert([{
+          PatientID: newPatientData.patientId,
+          Year: newPatientData.year,
+          PatientName: newPatientData.patientName,
+          NationalID: newPatientData.nationalId || null
+        }]);
 
-      if (response.data.success) {
-        alert('Patient added successfully!');
-        closeAddPatientModal();
-        loadPatientsList();
+      if (error) throw error;
 
-        setPatients(response.data.patient);
-      } else {
-        alert('Failed to add patient: ' + response.data.message);
-      }
+      alert('Patient added successfully!');
+      closeAddPatientModal();
+      loadPatientsList();
+
+      // Set as current patient
+      setPatients({
+        PatientID: newPatientData.patientId,
+        Year: newPatientData.year,
+        PatientName: newPatientData.patientName,
+        NationalID: newPatientData.nationalId,
+        fullId: `${newPatientData.patientId}/${newPatientData.year}`
+      });
     } catch (error) {
       console.error('Error adding patient:', error);
-      alert('Error adding patient: ' + (error.response?.data?.message || error.message));
+      alert('Error adding patient: ' + error.message);
     }
   };
 
@@ -550,30 +521,31 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/api/patients/${editingPatient.PatientID}/${editingPatient.Year}`,
-        {
-          patientName: editingPatient.PatientName,
-          nationalId: editingPatient.NationalID
-        }
-      );
+      const { error } = await supabase
+        .from('patients_correct')
+        .update({
+          PatientName: editingPatient.PatientName,
+          NationalID: editingPatient.NationalID
+        })
+        .eq('PatientID', editingPatient.PatientID)
+        .eq('Year', editingPatient.Year);
 
-      if (response.data.success) {
-        alert('Patient updated successfully!');
-        closeAddPatientModal();
-        loadPatientsList();
+      if (error) throw error;
 
-        if (patients && patients.PatientID === editingPatient.PatientID && patients.Year === editingPatient.Year) {
-          setPatients(prev => ({
-            ...prev,
-            PatientName: editingPatient.PatientName,
-            NationalID: editingPatient.NationalID
-          }));
-        }
+      alert('Patient updated successfully!');
+      closeAddPatientModal();
+      loadPatientsList();
+
+      if (patients && patients.PatientID === editingPatient.PatientID && patients.Year === editingPatient.Year) {
+        setPatients(prev => ({
+          ...prev,
+          PatientName: editingPatient.PatientName,
+          NationalID: editingPatient.NationalID
+        }));
       }
     } catch (error) {
       console.error('Error updating patient:', error);
-      alert('Error updating patient: ' + (error.response?.data?.message || error.message));
+      alert('Error updating patient: ' + error.message);
     }
   };
 
@@ -583,21 +555,23 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.delete(
-        `${API_BASE_URL}/api/patients/${patient.PatientID}/${patient.Year}`
-      );
+      const { error } = await supabase
+        .from('patients_correct')
+        .delete()
+        .eq('PatientID', patient.PatientID)
+        .eq('Year', patient.Year);
 
-      if (response.data.success) {
-        alert('Patient deleted successfully!');
-        loadPatientsList();
+      if (error) throw error;
 
-        if (patients && patients.PatientID === patient.PatientID && patients.Year === patient.Year) {
-          setPatients(null);
-        }
+      alert('Patient deleted successfully!');
+      loadPatientsList();
+
+      if (patients && patients.PatientID === patient.PatientID && patients.Year === patient.Year) {
+        setPatients(null);
       }
     } catch (error) {
       console.error('Error deleting patient:', error);
-      alert('Error deleting patient: ' + (error.response?.data?.message || error.message));
+      alert('Error deleting patient: ' + error.message);
     }
   };
 
@@ -680,19 +654,21 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/medications/custom`, customDrugData);
+      const { data, error } = await supabase
+        .from('tblDrugs')
+        .insert([{
+          DrugName: customDrugData.drugName,
+          Instruction: customDrugData.instructionText || 'Take as directed',
+          active_ingredient: customDrugData.activeIngredient || '',
+          InternationalCode: customDrugData.internationalCode || ''
+        }]);
 
-      if (response.data.success) {
-        alert('Custom drug added successfully!');
+      if (error) throw error;
 
-        await loadMedications();
-
-        await addCustomDrugToBasket(customDrugData.drugName, customDrugData.instructionText);
-
-        closeCustomDrugModal();
-      } else {
-        alert('Failed to add custom drug: ' + response.data.message);
-      }
+      alert('Custom drug added successfully!');
+      await loadMedications();
+      await addCustomDrugToBasket(customDrugData.drugName, customDrugData.instructionText);
+      closeCustomDrugModal();
     } catch (error) {
       console.error('Error saving custom drug:', error);
       alert('Error saving custom drug: ' + error.message);
@@ -720,94 +696,97 @@ const updateSystemSetting = async (key, value) => {
 
   const addCustomDrugToBasket = async (drugName, instructionText) => {
     try {
-      await axios.post(`${API_BASE_URL}/api/basket/add`, {
-        drugName: drugName,
-        instructionText: instructionText || 'Take as directed'
-      });
+      const newItem = {
+        TempID: Date.now().toString(),
+        DrugName: drugName,
+        InstructionText: instructionText || 'Take as directed',
+        printQuantity: 1,
+        expiryDate: "",
+        expiryMonth: "",
+        expiryYear: ""
+      };
 
-      loadBasket();
+      const updatedBasket = [...basket, newItem];
+      setBasket(updatedBasket);
+      localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
       alert(`Added "${drugName}" to basket successfully!`);
     } catch (error) {
-      throw new Error(error.response?.data?.error || error.message);
+      throw new Error('Failed to add to basket: ' + error.message);
     }
   };
 
   // ==================== ADMIN MANAGEMENT ====================
-
-  // Admin login
- // eslint-disable-next-line no-unused-vars
-  const handleAdminLogin = async () => {
-    try {
-      const response = await axios.post(`${API_BASE_URL}/api/admin/login`, {
-        username: "mahmoud_abdelkader",
-        password: "12345"
-      });
-
-      if (response.data.success) {
-        setIsAdmin(true);
-        setUser(response.data.user);
-        alert('Admin access granted!');
-      } else {
-        alert('Admin login failed: ' + response.data.message);
-      }
-    } catch (error) {
-      alert('Admin login error: ' + error.message);
-    }
-  };
-
-  // Open admin panel
   const openAdminPanel = async () => {
     setShowAdminPanel(true);
     loadAdminUsers();
     loadAdminStatistics();
     loadRecentActivities();
-	loadSystemSettings();
+    loadSystemSettings();
   };
 
-  // Close admin panel
   const closeAdminPanel = () => {
     setShowAdminPanel(false);
     setAdminActiveTab('dashboard');
   };
 
-  // Load admin users
   const loadAdminUsers = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/users`);
-      if (response.data.success) {
-        setAdminUsers(response.data.users);
-      }
+      const { data: users, error } = await supabase
+        .from('tblUsers')
+        .select('*')
+        .order('UserName');
+
+      if (error) throw error;
+      setAdminUsers(users || []);
     } catch (error) {
       console.error('Error loading users:', error);
       alert('Error loading users: ' + error.message);
     }
   };
 
-  // Load admin statistics
   const loadAdminStatistics = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/statistics`);
-      if (response.data.success) {
-        setAdminStatistics(response.data.statistics);
-      }
+      // Get medications count
+      const { count: medicationsCount } = await supabase
+        .from('tblDrugs')
+        .select('*', { count: 'exact', head: true });
+
+      // Get patients count
+      const { count: patientsCount } = await supabase
+        .from('patients_correct')
+        .select('*', { count: 'exact', head: true });
+
+      // Get users count
+      const { count: usersCount } = await supabase
+        .from('tblUsers')
+        .select('*', { count: 'exact', head: true });
+
+      // Get audit logs count from localStorage
+      const auditLogs = JSON.parse(localStorage.getItem("medicationAuditLogs") || "[]");
+      const auditLogsCount = auditLogs.length;
+
+      setAdminStatistics({
+        medicationsCount: medicationsCount || 0,
+        patientsCount: patientsCount || 0,
+        usersCount: usersCount || 0,
+        auditLogsCount
+      });
     } catch (error) {
       console.error('Error loading statistics:', error);
     }
   };
 
-  // Load recent activities
   const loadRecentActivities = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/admin/recent-activity`);
-      if (response.data.success) {
-        setRecentActivities(response.data.activities);
-      }
+      const auditLogs = JSON.parse(localStorage.getItem("medicationAuditLogs") || "[]");
+      // Get recent 20 activities
+      const recent = auditLogs.slice(-20).reverse();
+      setRecentActivities(recent);
     } catch (error) {
       console.error('Error loading activities:', error);
     }
   };
 
-  // Open add user modal
   const openAddUserModal = () => {
     setNewUserData({
       username: '',
@@ -820,13 +799,11 @@ const updateSystemSetting = async (key, value) => {
     setShowAddUserModal(true);
   };
 
-  // Close add user modal
   const closeAddUserModal = () => {
     setShowAddUserModal(false);
     setEditingUser(null);
   };
 
-  // Handle user form input changes
   const handleUserInputChange = (field, value) => {
     if (editingUser) {
       setEditingUser(prev => ({
@@ -841,7 +818,6 @@ const updateSystemSetting = async (key, value) => {
     }
   };
 
-  // Add new user
   const addNewUser = async () => {
     if (!newUserData.username || !newUserData.password || !newUserData.fullName) {
       alert('Please fill in all required fields (Username, Password, and Full Name)');
@@ -849,28 +825,32 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/admin/users`, newUserData);
+      const { data, error } = await supabase
+        .from('tblUsers')
+        .insert([{
+          UserName: newUserData.username,
+          Password: newUserData.password,
+          FullName: newUserData.fullName,
+          AccessLevel: newUserData.accessLevel,
+          IsActive: newUserData.isActive ? 'true' : 'false'
+        }]);
 
-      if (response.data.success) {
-        alert('User added successfully!');
-        closeAddUserModal();
-        loadAdminUsers();
-      } else {
-        alert('Failed to add user: ' + response.data.message);
-      }
+      if (error) throw error;
+
+      alert('User added successfully!');
+      closeAddUserModal();
+      loadAdminUsers();
     } catch (error) {
       console.error('Error adding user:', error);
-      alert('Error adding user: ' + (error.response?.data?.message || error.message));
+      alert('Error adding user: ' + error.message);
     }
   };
 
-  // Edit user
   const editUser = (user) => {
     setEditingUser({ ...user });
     setShowAddUserModal(true);
   };
 
-  // Update user
   const updateUser = async () => {
     if (!editingUser.username || !editingUser.fullName) {
       alert('Username and Full Name are required');
@@ -878,44 +858,55 @@ const updateSystemSetting = async (key, value) => {
     }
 
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/api/admin/users/${editingUser.UserID}`,
-        editingUser
-      );
+      const updateData = {
+        UserName: editingUser.UserName,
+        FullName: editingUser.FullName,
+        AccessLevel: editingUser.AccessLevel,
+        IsActive: editingUser.IsActive ? 'true' : 'false'
+      };
 
-      if (response.data.success) {
-        alert('User updated successfully!');
-        closeAddUserModal();
-        loadAdminUsers();
+      // Only update password if provided
+      if (editingUser.password) {
+        updateData.Password = editingUser.password;
       }
+
+      const { error } = await supabase
+        .from('tblUsers')
+        .update(updateData)
+        .eq('UserID', editingUser.UserID);
+
+      if (error) throw error;
+
+      alert('User updated successfully!');
+      closeAddUserModal();
+      loadAdminUsers();
     } catch (error) {
       console.error('Error updating user:', error);
-      alert('Error updating user: ' + (error.response?.data?.message || error.message));
+      alert('Error updating user: ' + error.message);
     }
   };
 
-  // Delete user
   const deleteUser = async (user) => {
     if (!window.confirm(`Are you sure you want to delete user: ${user.FullName} (${user.UserName})?`)) {
       return;
     }
 
     try {
-      const response = await axios.delete(
-        `${API_BASE_URL}/api/admin/users/${user.UserID}`
-      );
+      const { error } = await supabase
+        .from('tblUsers')
+        .delete()
+        .eq('UserID', user.UserID);
 
-      if (response.data.success) {
-        alert('User deleted successfully!');
-        loadAdminUsers();
-      }
+      if (error) throw error;
+
+      alert('User deleted successfully!');
+      loadAdminUsers();
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Error deleting user: ' + (error.response?.data?.message || error.message));
+      alert('Error deleting user: ' + error.message);
     }
   };
 
-  // Check if current user can manage patients/drugs
   const canManagePatients = () => {
     return isAdmin || user?.accessLevel === 'manager';
   };
@@ -1050,104 +1041,9 @@ const updateSystemSetting = async (key, value) => {
     }
   };
 
-  const testBackendAudit = async () => {
-    console.log("🔧 Testing backend audit endpoint...");
-
-    try {
-      const testData = {
-        patientId: "TEST123",
-        patientYear: "2025",
-        patientName: "Test Patient",
-        drugName: "Test Drug",
-        instructionText: "Test Instruction",
-        printedBy: user?.fullName || "Test User",
-      };
-
-      const response = await axios.post(`${API_BASE_URL}/api/audit`, testData, {
-        timeout: 3000,
-      });
-
-      console.log("✅ Backend audit test SUCCESS:", response.data);
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error(
-        "❌ Backend audit test FAILED:",
-        error.response?.data || error.message,
-      );
-
-      if (error.response) {
-        console.error("📋 Backend response:", {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-        });
-      } else if (error.request) {
-        console.error("🌐 No response received - network issue");
-      } else {
-        console.error("⚙️ Request setup error:", error.message);
-      }
-
-      return { success: false, error: error.message };
-    }
-  };
-
   const saveToAuditTrail = async () => {
     console.log("🔄 Starting audit trail process...");
-
-    const backendTest = await testBackendAudit();
-
-    if (backendTest.success) {
-      console.log("✅ Backend audit available - proceeding with backend save");
-      try {
-        const auditPromises = basket.map((item, index) => {
-          const auditData = {
-            patientId: patients.PatientID,
-            patientYear: patients.Year,
-            patientName: patients.PatientName,
-            drugName: item.DrugName,
-            instructionText: item.InstructionText,
-            printedBy: user.fullName,
-          };
-
-          return axios
-            .post(`${API_BASE_URL}/api/audit`, auditData, {
-              timeout: 3000,
-            })
-            .then((response) => {
-              console.log(`✅ Backend audit saved for: ${item.DrugName}`);
-              return response;
-            })
-            .catch((error) => {
-              console.warn(
-                `❌ Backend save failed for ${item.DrugName}:`,
-                error.message,
-              );
-              return { success: false, error: error.message };
-            });
-        });
-
-        const results = await Promise.allSettled(auditPromises);
-
-        const successfulSaves = results.filter(
-          (result) =>
-            result.status === "fulfilled" &&
-            result.value &&
-            !result.value.success === false,
-        ).length;
-
-        console.log(
-          `✅ Backend audit completed: ${successfulSaves}/${basket.length} successful`,
-        );
-
-        await saveToLocalAudit();
-      } catch (error) {
-        console.error("❌ Backend audit failed, using local storage:", error);
-        await saveToLocalAudit();
-      }
-    } else {
-      console.log("⚠️ Backend audit unavailable - using local storage");
-      await saveToLocalAudit();
-    }
+    await saveToLocalAudit();
   };
 
   const generatePrintPreview = () => {
@@ -1472,8 +1368,8 @@ const updateSystemSetting = async (key, value) => {
     try {
       generatePrintPreview();
       await saveToAuditTrail();
-      await axios.delete(`${API_BASE_URL}/api/basket`);
-      loadBasket();
+      setBasket([]);
+      localStorage.removeItem('medicationBasket');
       alert("Labels printed successfully!");
     } catch (error) {
       console.error("Print error:", error);
@@ -2335,7 +2231,7 @@ const updateSystemSetting = async (key, value) => {
         </div>
       )}
 
-              {/* Admin Panel Modal */}
+      {/* Admin Panel Modal */}
       {showAdminPanel && (
         <div className="modal-overlay">
           <div className="modal-content extra-large-modal">
@@ -2598,10 +2494,10 @@ const updateSystemSetting = async (key, value) => {
                           <tbody>
                             {recentActivities.map((activity, index) => (
                               <tr key={index} className={index % 2 === 0 ? 'even' : 'odd'}>
-                                <td>{new Date(activity.PrintDate).toLocaleString()}</td>
-                                <td>{activity.PatientName}</td>
-                                <td>{activity.DrugName}</td>
-                                <td>{activity.PrintedBy}</td>
+                                <td>{new Date(activity.timestamp).toLocaleString()}</td>
+                                <td>{activity.patientName}</td>
+                                <td>{activity.drugName}</td>
+                                <td>{activity.printedBy}</td>
                               </tr>
                             ))}
                           </tbody>
