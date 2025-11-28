@@ -258,9 +258,6 @@ const loadBasket = () => {
     }
   };
 
-  const filterMedications = (medications, searchTerm) => {
-  if (!searchTerm.trim()) return medications;
-
   const searchText = searchTerm.trim().toLowerCase();
 
   const filtered = medications.filter((medication) => {
