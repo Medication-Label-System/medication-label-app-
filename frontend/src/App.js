@@ -146,13 +146,13 @@ function App() {
         accessLevel: user.AccessLevel
       });
     
-      // Check if admin - based on database AccessLevel
-        if (user.AccessLevel === "admin" || user.UserName === "mahmoud_abdelkader") {
-          setIsAdmin(true);
-          alert(`👑 Welcome System Administrator ${user.FullName}! Admin privileges activated.`);
-        } else {
-          alert(`✅ Welcome ${user.FullName}!`);
-        }
+      // Check if admin
+      if (user.UserName === "mahmoud_abdelkader" && loginData.password === "12345") {
+        setIsAdmin(true);
+        alert(`👑 Welcome System Administrator ${user.FullName}! Admin privileges activated.`);
+      } else {
+        alert(`✅ Welcome ${user.FullName}!`);
+      }
       
     } catch (error) {
       alert('Login error: ' + error.message);
