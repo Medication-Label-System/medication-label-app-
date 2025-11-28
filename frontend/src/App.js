@@ -81,7 +81,7 @@ function App() {
   useEffect(() => {
     loadMedications();
     loadLocalAuditLogs();
-	loadBasket();
+    loadBasket();
   }, []);
 
   // ==================== AUTHENTICATION ====================
@@ -169,56 +169,56 @@ function App() {
   };
   
   // ==================== BASKET MANAGEMENT ====================
-const loadBasket = () => {
-  try {
-    const savedBasket = localStorage.getItem('medicationBasket');
-    if (savedBasket) {
-      const basketData = JSON.parse(savedBasket);
-      setBasket(basketData);
-      console.log("Loaded basket from localStorage:", basketData.length, "items");
+  const loadBasket = () => {
+    try {
+      const savedBasket = localStorage.getItem('medicationBasket');
+      if (savedBasket) {
+        const basketData = JSON.parse(savedBasket);
+        setBasket(basketData);
+        console.log("Loaded basket from localStorage:", basketData.length, "items");
+      }
+    } catch (error) {
+      console.error("Error loading basket:", error);
+      setBasket([]);
     }
-  } catch (error) {
-    console.error("Error loading basket:", error);
-    setBasket([]);
-  }
-};
+  };
 
   // ==================== MEDICATIONS ====================
   const loadMedications = async () => {
-  try {
-    // First get all drugs
-    const { data: medications, error: drugsError } = await supabase
-      .from('tblDrugs')
-      .select('*')
-      .order('DrugName');
+    try {
+      // First get all drugs
+      const { data: medications, error: drugsError } = await supabase
+        .from('tblDrugs')
+        .select('*')
+        .order('DrugName');
 
-    if (drugsError) throw drugsError;
+      if (drugsError) throw drugsError;
 
-    // Then get all usage instructions
-    const { data: instructions, error: instructionsError } = await supabase
-      .from('tblUsageInstructions')
-      .select('*');
+      // Then get all usage instructions
+      const { data: instructions, error: instructionsError } = await supabase
+        .from('tblUsageInstructions')
+        .select('*');
 
-    if (instructionsError) throw instructionsError;
+      if (instructionsError) throw instructionsError;
 
-    // Combine drugs with their instructions
-    const medicationsWithInstructions = medications.map(medication => {
-      // Find matching instruction by DrugName
-      const instruction = instructions.find(inst => inst.DrugName === medication.DrugName);
-      
-      return {
-        ...medication,
-        Instruction: instruction ? instruction.InstructionText : 'Take as directed'
-      };
-    });
+      // Combine drugs with their instructions
+      const medicationsWithInstructions = medications.map(medication => {
+        // Find matching instruction by DrugName
+        const instruction = instructions.find(inst => inst.DrugName === medication.DrugName);
+        
+        return {
+          ...medication,
+          Instruction: instruction ? instruction.InstructionText : 'Take as directed'
+        };
+      });
 
-    setMedications(medicationsWithInstructions || []);
-    console.log("Loaded medications with instructions:", medicationsWithInstructions.length);
-  } catch (error) {
-    console.error("Error loading medications:", error);
-    setMedications([]);
-  }
-};
+      setMedications(medicationsWithInstructions || []);
+      console.log("Loaded medications with instructions:", medicationsWithInstructions.length);
+    } catch (error) {
+      console.error("Error loading medications:", error);
+      setMedications([]);
+    }
+  };
 
   const loadSystemSettings = async () => {
     try {
@@ -258,24 +258,27 @@ const loadBasket = () => {
     }
   };
 
-  const searchText = searchTerm.trim().toLowerCase();
+  const filterMedications = (medications, searchTerm) => {
+    if (!searchTerm.trim()) return medications;
 
-  const filtered = medications.filter((medication) => {
-    const drugName = (medication.DrugName || "").toLowerCase();
-    const instruction = (medication.Instruction || medication.InstructionText || "").toLowerCase();
-    const activeIngredient = (
-      medication.active_ingredient || ""
-    ).toLowerCase();
+    const searchText = searchTerm.trim().toLowerCase();
 
-    const nameMatch = drugName.includes(searchText);
-    const instructionMatch = instruction.includes(searchText);
-    const ingredientMatch = activeIngredient.includes(searchText);
+    const filtered = medications.filter((medication) => {
+      const drugName = (medication.DrugName || "").toLowerCase();
+      const instruction = (medication.Instruction || "").toLowerCase();
+      const activeIngredient = (
+        medication.active_ingredient || ""
+      ).toLowerCase();
 
-    return nameMatch || instructionMatch || ingredientMatch;
-  });
+      const nameMatch = drugName.includes(searchText);
+      const instructionMatch = instruction.includes(searchText);
+      const ingredientMatch = activeIngredient.includes(searchText);
 
-  return filtered;
-};
+      return nameMatch || instructionMatch || ingredientMatch;
+    });
+
+    return filtered;
+  };
 
   const createUniqueKey = (medication, index) => {
     return `${medication.DrugName}-${index}-${medication.InternationalCode || ""}`;
@@ -283,36 +286,36 @@ const loadBasket = () => {
 
   // ==================== BASKET MANAGEMENT ====================
   const addToBasket = async (medication) => {
-  if (!patients) {
-    alert("Please search and select a patient first!");
-    return;
-  }
+    if (!patients) {
+      alert("Please search and select a patient first!");
+      return;
+    }
 
-  const instructionToUse = useCustomInstruction && customInstruction 
-    ? customInstruction 
-    : medication.Instruction;
+    const instructionToUse = useCustomInstruction && customInstruction 
+      ? customInstruction 
+      : medication.Instruction;
 
-  const newItem = {
-    TempID: Date.now().toString(),
-    DrugName: medication.DrugName,
-    InstructionText: instructionToUse,
-    printQuantity: 1,
-    expiryDate: "",
-    expiryMonth: "",
-    expiryYear: ""
+    const newItem = {
+      TempID: Date.now().toString(),
+      DrugName: medication.DrugName,
+      InstructionText: instructionToUse,
+      printQuantity: 1,
+      expiryDate: "",
+      expiryMonth: "",
+      expiryYear: ""
+    };
+
+    const updatedBasket = [...basket, newItem];
+    setBasket(updatedBasket);
+    localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
+
+    if (useCustomInstruction) {
+      setCustomInstruction("");
+      setUseCustomInstruction(false);
+    }
+
+    alert(`Added ${medication.DrugName} to basket`);
   };
-
-  const updatedBasket = [...basket, newItem];
-  setBasket(updatedBasket);
-  localStorage.setItem('medicationBasket', JSON.stringify(updatedBasket));
-
-  if (useCustomInstruction) {
-    setCustomInstruction("");
-    setUseCustomInstruction(false);
-  }
-
-  alert(`Added ${medication.DrugName} to basket`);
-};
 
   const updateMedicationQuantity = (tempId, quantity) => {
     const newQuantity = Math.max(1, Math.min(10, parseInt(quantity) || 1));
@@ -662,47 +665,47 @@ const loadBasket = () => {
   };
 
   const saveCustomDrug = async () => {
-  if (!customDrugData.drugName.trim()) {
-    alert('Please enter a drug name');
-    return;
-  }
+    if (!customDrugData.drugName.trim()) {
+      alert('Please enter a drug name');
+      return;
+    }
 
-  if (!patients) {
-    alert('Please search and select a patient first!');
-    return;
-  }
+    if (!patients) {
+      alert('Please search and select a patient first!');
+      return;
+    }
 
-  try {
-    // First insert into tblDrugs
-    const { error: drugError } = await supabase
-      .from('tblDrugs')
-      .insert([{
-        DrugName: customDrugData.drugName,
-        active_ingredient: customDrugData.activeIngredient || '',
-        InternationalCode: customDrugData.internationalCode || ''
-      }]);
+    try {
+      // First insert into tblDrugs
+      const { error: drugError } = await supabase
+        .from('tblDrugs')
+        .insert([{
+          DrugName: customDrugData.drugName,
+          active_ingredient: customDrugData.activeIngredient || '',
+          InternationalCode: customDrugData.internationalCode || ''
+        }]);
 
-    if (drugError) throw drugError;
+      if (drugError) throw drugError;
 
-    // Then insert into tblUsageInstructions
-    const { error: instructionError } = await supabase
-      .from('tblUsageInstructions')
-      .insert([{
-        DrugName: customDrugData.drugName,
-        InstructionText: customDrugData.instructionText || 'Take as directed'
-      }]);
+      // Then insert into tblUsageInstructions
+      const { error: instructionError } = await supabase
+        .from('tblUsageInstructions')
+        .insert([{
+          DrugName: customDrugData.drugName,
+          InstructionText: customDrugData.instructionText || 'Take as directed'
+        }]);
 
-    if (instructionError) throw instructionError;
+      if (instructionError) throw instructionError;
 
-    alert('Custom drug added successfully!');
-    await loadMedications();
-    await addCustomDrugToBasket(customDrugData.drugName, customDrugData.instructionText);
-    closeCustomDrugModal();
-  } catch (error) {
-    console.error('Error saving custom drug:', error);
-    alert('Error saving custom drug: ' + error.message);
-  }
-}; // ← MAKE SURE THIS CLOSING BRACE AND SEMICOLON ARE PRESENT
+      alert('Custom drug added successfully!');
+      await loadMedications();
+      await addCustomDrugToBasket(customDrugData.drugName, customDrugData.instructionText);
+      closeCustomDrugModal();
+    } catch (error) {
+      console.error('Error saving custom drug:', error);
+      alert('Error saving custom drug: ' + error.message);
+    }
+  };
 
   const quickAddCustomDrug = async () => {
     if (!customDrugData.drugName.trim()) {
@@ -1455,27 +1458,11 @@ const loadBasket = () => {
   };
 
   // ==================== RENDER LOGIC ====================
-  const filterMedications = (medications, searchTerm) => {
-  if (!searchTerm.trim()) return medications;
-
-  const searchText = searchTerm.trim().toLowerCase();
-
-  const filtered = medications.filter((medication) => {
-    const drugName = (medication.DrugName || "").toLowerCase();
-    const instruction = (medication.Instruction || "").toLowerCase();
-    const activeIngredient = (
-      medication.active_ingredient || ""
-    ).toLowerCase();
-
-    const nameMatch = drugName.includes(searchText);
-    const instructionMatch = instruction.includes(searchText);
-    const ingredientMatch = activeIngredient.includes(searchText);
-
-    return nameMatch || instructionMatch || ingredientMatch;
-  });
-
-  return filtered;
-};
+  const filteredMedications = filterMedications(medications, searchTerm);
+  const totalLabelsCount = basket.reduce(
+    (total, item) => total + (item.printQuantity || 1),
+    0,
+  );
 
   if (!user) {
     return (
