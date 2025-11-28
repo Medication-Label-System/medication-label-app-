@@ -129,11 +129,11 @@ function App() {
   
     // ✅ CONTINUE NORMAL LOGIN
     const { data: users, error } = await supabase
-      .from('tblUsers')
-      .select('*')
-      .eq('UserName', loginData.username)
-      .eq('Password', loginData.password)
-      .eq('IsActive', true);
+       .from('tblUsers')
+       .select('*')
+       .eq('UserName', loginData.username)
+       .eq('Password', loginData.password)
+       .eq('IsActive', 'true');  // ← Use string 'true' instead of boolean true
   
     if (error || !users || users.length === 0) {
       alert('Invalid username or password');
