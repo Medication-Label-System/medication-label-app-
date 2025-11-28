@@ -147,7 +147,7 @@ function App() {
       });
     
       // Check if admin
-      if (user.UserName === "mahmoud_abdelkader" && loginData.password === "12345") {
+      if (user.UserName === "mahmoud_abdelkader" && loginData.password === "#TRIVOLI#012000456789") {
         setIsAdmin(true);
         alert(`👑 Welcome System Administrator ${user.FullName}! Admin privileges activated.`);
       } else {
