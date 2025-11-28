@@ -702,7 +702,7 @@ const loadBasket = () => {
     console.error('Error saving custom drug:', error);
     alert('Error saving custom drug: ' + error.message);
   }
-};
+}; // ← MAKE SURE THIS CLOSING BRACE AND SEMICOLON ARE PRESENT
 
   const quickAddCustomDrug = async () => {
     if (!customDrugData.drugName.trim()) {
@@ -1479,7 +1479,6 @@ const loadBasket = () => {
 
   if (!user) {
     return (
-  };
       <div className="App login-container">
         <div className="login-box">
           <h1>💊 Medication Label System</h1>
