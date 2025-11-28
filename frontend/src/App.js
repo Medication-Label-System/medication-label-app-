@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { supabase } from "./supabaseClient";
 import "./App.css";
 
 // Import your logo - adjust the path and file name as needed
