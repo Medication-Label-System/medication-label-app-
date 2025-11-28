@@ -186,21 +186,34 @@ const loadBasket = () => {
   // ==================== MEDICATIONS ====================
   const loadMedications = async () => {
   try {
-    const { data: medications, error } = await supabase
+    // First get all drugs
+    const { data: medications, error: drugsError } = await supabase
       .from('tblDrugs')
       .select('*')
       .order('DrugName');
 
-    if (error) throw error;
-    
-    // Map the database column names to consistent frontend names
-    const mappedMedications = medications.map(med => ({
-      ...med,
-      Instruction: med.InstructionText || '' // Map InstructionText to Instruction for frontend
-    }));
-    
-    setMedications(mappedMedications || []);
-    console.log("Loaded medications from Supabase:", medications.length);
+    if (drugsError) throw drugsError;
+
+    // Then get all usage instructions
+    const { data: instructions, error: instructionsError } = await supabase
+      .from('tblUsageInstructions')
+      .select('*');
+
+    if (instructionsError) throw instructionsError;
+
+    // Combine drugs with their instructions
+    const medicationsWithInstructions = medications.map(medication => {
+      // Find matching instruction by DrugName
+      const instruction = instructions.find(inst => inst.DrugName === medication.DrugName);
+      
+      return {
+        ...medication,
+        Instruction: instruction ? instruction.InstructionText : 'Take as directed'
+      };
+    });
+
+    setMedications(medicationsWithInstructions || []);
+    console.log("Loaded medications with instructions:", medicationsWithInstructions.length);
   } catch (error) {
     console.error("Error loading medications:", error);
     setMedications([]);
@@ -652,37 +665,47 @@ const loadBasket = () => {
   };
 
   const saveCustomDrug = async () => {
-    if (!customDrugData.drugName.trim()) {
-      alert('Please enter a drug name');
-      return;
-    }
+  if (!customDrugData.drugName.trim()) {
+    alert('Please enter a drug name');
+    return;
+  }
 
-    if (!patients) {
-      alert('Please search and select a patient first!');
-      return;
-    }
+  if (!patients) {
+    alert('Please search and select a patient first!');
+    return;
+  }
 
-    try {
-      const { error } = await supabase
-        .from('tblDrugs')
-        .insert([{
-          DrugName: customDrugData.drugName,
-          instructionText: customDrugData.instructionText || 'Take as directed',
-          active_ingredient: customDrugData.activeIngredient || '',
-          InternationalCode: customDrugData.internationalCode || ''
-        }]);
+  try {
+    // First insert into tblDrugs
+    const { error: drugError } = await supabase
+      .from('tblDrugs')
+      .insert([{
+        DrugName: customDrugData.drugName,
+        active_ingredient: customDrugData.activeIngredient || '',
+        InternationalCode: customDrugData.internationalCode || ''
+      }]);
 
-      if (error) throw error;
+    if (drugError) throw drugError;
 
-      alert('Custom drug added successfully!');
-      await loadMedications();
-      await addCustomDrugToBasket(customDrugData.drugName, customDrugData.instructionText);
-      closeCustomDrugModal();
-    } catch (error) {
-      console.error('Error saving custom drug:', error);
-      alert('Error saving custom drug: ' + error.message);
-    }
-  };
+    // Then insert into tblUsageInstructions
+    const { error: instructionError } = await supabase
+      .from('tblUsageInstructions')
+      .insert([{
+        DrugName: customDrugData.drugName,
+        InstructionText: customDrugData.instructionText || 'Take as directed'
+      }]);
+
+    if (instructionError) throw instructionError;
+
+    alert('Custom drug added successfully!');
+    await loadMedications();
+    await addCustomDrugToBasket(customDrugData.drugName, customDrugData.instructionText);
+    closeCustomDrugModal();
+  } catch (error) {
+    console.error('Error saving custom drug:', error);
+    alert('Error saving custom drug: ' + error.message);
+  }
+};
 
   const quickAddCustomDrug = async () => {
     if (!customDrugData.drugName.trim()) {
@@ -1435,11 +1458,27 @@ const loadBasket = () => {
   };
 
   // ==================== RENDER LOGIC ====================
-  const filteredMedications = filterMedications(medications, searchTerm);
-  const totalLabelsCount = basket.reduce(
-    (total, item) => total + (item.printQuantity || 1),
-    0,
-  );
+  const filterMedications = (medications, searchTerm) => {
+  if (!searchTerm.trim()) return medications;
+
+  const searchText = searchTerm.trim().toLowerCase();
+
+  const filtered = medications.filter((medication) => {
+    const drugName = (medication.DrugName || "").toLowerCase();
+    const instruction = (medication.Instruction || "").toLowerCase();
+    const activeIngredient = (
+      medication.active_ingredient || ""
+    ).toLowerCase();
+
+    const nameMatch = drugName.includes(searchText);
+    const instructionMatch = instruction.includes(searchText);
+    const ingredientMatch = activeIngredient.includes(searchText);
+
+    return nameMatch || instructionMatch || ingredientMatch;
+  });
+
+  return filtered;
+};
 
   if (!user) {
     return (
@@ -1702,7 +1741,7 @@ const loadBasket = () => {
                     >
                       <div className="medication-info">
                         <strong>{medication.DrugName}</strong>
-                        <p>{medication.InstructionText}</p>
+                        <p>{medication.Instruction}</p>
                         {medication.active_ingredient && (
                           <small style={{ color: "#666", fontStyle: "italic" }}>
                             المادة الفعالة: {medication.active_ingredient}
