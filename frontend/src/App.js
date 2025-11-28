@@ -1479,6 +1479,7 @@ const loadBasket = () => {
 
   if (!user) {
     return (
+  };
       <div className="App login-container">
         <div className="login-box">
           <h1>💊 Medication Label System</h1>
