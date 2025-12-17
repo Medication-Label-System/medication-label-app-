@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { supabase } from "./supabaseClient";
+import api from "./api";  // Add this line
 import "./App.css";
-
 import pharmacyLogo from "./assets/logo.png";
 
 // Memoized Medication Item Component
