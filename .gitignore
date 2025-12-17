@@ -1,0 +1,4 @@
+node_modules/ 
+medications.db 
+.env 
+package-lock.json 
