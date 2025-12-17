@@ -1,0 +1,1414 @@
+.App {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* Login Styles */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-box {
+  background: white;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  text-align: center;
+}
+
+.login-box h1 {
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  border-color: #667eea;
+  outline: none;
+}
+
+/* Main App Styles */
+.app-header {
+  background: #2c3e50;
+  color: white;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logout-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+.main-container {
+  display: flex;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  gap: 20px;
+}
+
+.left-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.right-panel {
+  width: 400px;
+  min-width: 400px;
+}
+
+.section {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.section h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+/* Patient Search */
+.search-form .input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.search-form input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+}
+
+.search-form button {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.search-form button:hover {
+  background: #2980b9;
+}
+
+.patient-info {
+  background: #d4edda;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #c3e6cb;
+}
+
+.patient-info h3 {
+  margin-top: 0;
+  color: #155724;
+}
+
+/* Medications */
+.search-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.custom-instruction-toggle {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  border: 1px solid #e9ecef;
+}
+
+.custom-instruction-toggle label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.custom-instruction-toggle textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.medications-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.medication-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 15px;
+  border: 1px solid #ecf0f1;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  background: #f8f9fa;
+}
+
+.medication-item:hover {
+  background: #e9ecef;
+}
+
+.medication-info {
+  flex: 1;
+}
+
+.medication-info strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #2c3e50;
+}
+
+.medication-info p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.medication-info small {
+  color: #7f8c8d;
+  font-size: 12px;
+}
+
+.medication-item button {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+  margin-left: 10px;
+}
+
+.medication-item button:hover:not(:disabled) {
+  background: #219a52;
+}
+
+.medication-item button:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* Basket */
+.empty-basket {
+  text-align: center;
+  color: #7f8c8d;
+  font-style: italic;
+  padding: 20px;
+}
+
+.basket-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 15px;
+}
+
+.basket-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+}
+
+.basket-info {
+  flex: 1;
+}
+
+.basket-info strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.basket-info p {
+  margin: 0;
+  color: #555;
+  font-size: 12px;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 5px;
+  margin-left: 10px;
+}
+
+.basket-controls {
+  text-align: center;
+}
+
+.clear-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.clear-btn:hover {
+  background: #c0392b;
+}
+
+/* Expiry date input in basket */
+.expiry-input {
+  margin-top: 8px;
+  padding: 5px;
+  background: #f8f9fa;
+  border-radius: 3px;
+}
+
+.expiry-input label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  color: #555;
+}
+
+.expiry-input input {
+  width: 100%;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+/* Adjust basket item for expiry date */
+.basket-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+}
+
+.basket-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.basket-info strong {
+  display: block;
+  margin-bottom: 3px;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
+.basket-info p {
+  margin: 0;
+  color: #555;
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+/* Print Controls */
+.print-controls {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.print-controls .form-group {
+  margin-bottom: 15px;
+}
+
+.print-controls label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #555;
+}
+
+.print-controls input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.print-btn {
+  background: #e67e22;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  margin: 15px 0;
+}
+
+.print-btn:hover {
+  background: #d35400;
+}
+
+.print-summary {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  border: 1px solid #e9ecef;
+  font-size: 14px;
+}
+
+.print-summary p {
+  margin: 5px 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main-container {
+    flex-direction: column;
+  }
+
+  .right-panel {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+/* Patient Management Styles */
+.large-modal {
+  width: 90%;
+  max-width: 1200px;
+  max-height: 90vh;
+}
+
+.patient-management-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.search-container {
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-container .search-form {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-container .search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.clear-search {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.clear-search:hover {
+  background: #545b62;
+}
+
+.add-patient-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-patient-btn:hover {
+  background: #218838;
+}
+
+.patients-list-container {
+  margin-top: 20px;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.list-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 0.9em;
+}
+
+.no-patients-message {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 5px;
+}
+
+.patients-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.patients-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.patients-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+}
+
+.patients-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.patients-table tr.even {
+  background: #f8f9fa;
+}
+
+.patients-table tr.odd {
+  background: white;
+}
+
+.patients-table tr:hover {
+  background: #e9ecef;
+}
+
+.patient-name-cell {
+  font-weight: 500;
+}
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.actions-cell button {
+  margin: 0 2px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.select-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+.select-btn:hover {
+  background: #138496;
+}
+
+.edit-btn {
+  background: #ffc107;
+  color: black;
+}
+
+.edit-btn:hover {
+  background: #e0a800;
+}
+
+.delete-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.delete-btn:hover {
+  background: #c82333;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 15px;
+}
+
+.pagination-btn {
+  padding: 8px 15px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #f8f9fa;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: #666;
+  font-weight: 500;
+}
+
+.current-patient-info {
+  margin-top: 20px;
+  padding: 15px;
+  background: #e7f3ff;
+  border-radius: 5px;
+  border-left: 4px solid #007bff;
+}
+
+.current-patient-info h4 {
+  margin: 0 0 10px 0;
+  color: #0056b3;
+}
+
+.current-patient-info p {
+  margin: 5px 0;
+  color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .large-modal {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .patient-management-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-container {
+    min-width: auto;
+  }
+
+  .patients-table-container {
+    font-size: 14px;
+  }
+
+  .actions-cell {
+    white-space: normal;
+  }
+
+  .actions-cell button {
+    display: block;
+    margin: 2px 0;
+    width: 100%;
+  }
+}
+
+/* Admin Panel Styles */
+.extra-large-modal {
+  width: 95%;
+  max-width: 1400px;
+  max-height: 90vh;
+}
+
+.admin-panel-btn,
+.admin-panel-main-btn {
+  background: #dc3545 !important;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.admin-panel-btn:hover,
+.admin-panel-main-btn:hover {
+  background: #c82333 !important;
+}
+
+.admin-tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.admin-tab {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  font-size: 14px;
+}
+
+.admin-tab.active {
+  border-bottom-color: #007bff;
+  background: #f8f9fa;
+  font-weight: bold;
+}
+
+.admin-tab:hover {
+  background: #f8f9fa;
+}
+
+/* Dashboard Styles */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.dashboard-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-left: 4px solid #007bff;
+}
+
+.dashboard-card h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.card-number {
+  font-size: 2em;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #007bff;
+}
+
+.quick-actions {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 10px 15px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background: #218838;
+}
+
+/* User Management Styles */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.add-user-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-user-btn:hover {
+  background: #218838;
+}
+
+.users-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.users-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+}
+
+.users-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.access-level {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.access-level.admin {
+  background: #dc3545;
+  color: white;
+}
+
+.access-level.manager {
+  background: #ffc107;
+  color: black;
+}
+
+.access-level.user {
+  background: #6c757d;
+  color: white;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.status.active {
+  background: #28a745;
+  color: white;
+}
+
+.status.inactive {
+  background: #6c757d;
+  color: white;
+}
+
+.user-actions {
+  white-space: nowrap;
+}
+
+.edit-user-btn,
+.delete-user-btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  margin: 0 2px;
+}
+
+.edit-user-btn {
+  background: #ffc107;
+  color: black;
+}
+
+.edit-user-btn:hover {
+  background: #e0a800;
+}
+
+.delete-user-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.delete-user-btn:hover {
+  background: #c82333;
+}
+
+/* Statistics Styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.stat-item {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-item h4 {
+  margin-top: 0;
+  color: #333;
+}
+
+.stat-item ul {
+  list-style: none;
+  padding: 0;
+}
+
+.stat-item li {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.refresh-stats-btn,
+.manage-users-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.refresh-stats-btn {
+  background: #17a2b8;
+  color: white;
+}
+
+.manage-users-btn {
+  background: #6f42c1;
+  color: white;
+}
+
+/* Activities Styles */
+.activities-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.activities-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.activities-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+}
+
+.activities-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .extra-large-modal {
+    width: 98%;
+    margin: 10px;
+  }
+
+  .admin-tabs {
+    flex-direction: column;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .user-actions {
+    white-space: normal;
+  }
+
+  .edit-user-btn,
+  .delete-user-btn {
+    display: block;
+    margin: 2px 0;
+    width: 100%;
+  }
+}
+
+/* Styles for medications without expiry date requirement */
+.no-expiry-required {
+  background-color: #f8f9fa !important;
+  border-left: 4px solid #6c757d !important;
+}
+
+.no-expiry-required:hover {
+  background-color: #e9ecef !important;
+}
+
+.medication-item.no-expiry-required .medication-info small {
+  color: #6c757d !important;
+  font-weight: 500 !important;
+}
+
+/* Basket items without expiry date requirement */
+.basket-item.no-expiry-required {
+  background-color: #f8f9fa !important;
+  border-left: 4px solid #6c757d !important;
+}
+
+/* Expiry info box for items without expiry date */
+.expiry-info {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.expiry-info small {
+  color: #6c757d;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Custom drug modal - expiry checkbox */
+.form-group.checkbox-group {
+  margin: 15px 0;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.form-group.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.form-group.checkbox-group input[type="checkbox"] {
+  margin-right: 10px;
+  width: auto;
+}
+
+.form-group.checkbox-group small {
+  display: block;
+  margin-top: 5px;
+  color: #6c757d;
+  font-size: 12px;
+}
+
+/* Print summary expiry status */
+.expiry-status {
+  padding: 8px;
+  border-radius: 5px;
+  margin-top: 5px;
+  font-size: 13px;
+}
+
+.expiry-status.complete {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.expiry-status.pending {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+/* Tab Navigation */
+.tab-navigation {
+  display: flex;
+  background: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 0 30px;
+}
+
+.tab-button {
+  padding: 15px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: #6c757d;
+  transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+  color: #495057;
+  background: #e9ecef;
+}
+
+.tab-button.active {
+  color: #007bff;
+  border-bottom-color: #007bff;
+  font-weight: 600;
+}
+
+/* Quantity input in basket */
+.quantity-input {
+  margin-top: 8px;
+  padding: 5px;
+  background: #f8f9fa;
+  border-radius: 3px;
+}
+
+.quantity-input label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  color: #555;
+}
+
+.quantity-input input {
+  width: 60px;
+  padding: 4px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 11px;
+}
+
+/* Audit logs table updates */
+.audit-logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.audit-logs-table th {
+  background: #f8f9fa;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #dee2e6;
+  position: sticky;
+  top: 0;
+}
+
+.audit-logs-table td {
+  padding: 12px;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 14px;
+}
+
+.audit-logs-table tr.even {
+  background: #f8f9fa;
+}
+
+.audit-logs-table tr.odd {
+  background: white;
+}
+
+.audit-logs-table tr:hover {
+  background: #e9ecef;
+}
+
+/* Modal styles for expiry requirement */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+}
+
+.close-button:hover {
+  color: #495057;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .no-expiry-required .medication-info small {
+    font-size: 11px;
+  }
+
+  .expiry-info {
+    font-size: 12px;
+  }
+
+  .tab-navigation {
+    padding: 0 10px;
+  }
+
+  .tab-button {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+/* Update the dashboard cards to include protocols card */
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+
+/* Update the tab navigation if needed */
+.admin-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 10px;
+}
+
+.admin-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.admin-tab.active {
+  border-bottom-color: #4a6fa5;
+  color: #4a6fa5;
+  font-weight: bold;
+}
+
+/* Update modal sizes */
+.large-modal .modal-content {
+  max-width: 800px;
+}
+
+.extra-large-modal .modal-content {
+  max-width: 1200px;
+}
+
+/* Update medication items for group styling */
+.medication-item {
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background-color: white;
+  transition: all 0.2s;
+}
+
+.medication-item:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
+}
+
+/* Update basket items for group indicator */
+.basket-item {
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+/* Update search input */
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+/* Update button styles for consistency */
+button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Update primary button colors */
+.primary-button {
+  background-color: #4a6fa5;
+  color: white;
+  font-weight: bold;
+}
+
+.secondary-button {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* Update admin panel button colors */
+.admin-panel-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.logout-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+/* Update the group management button in main interface */
+.group-management-button {
+  background-color: #4a6fa5;
+  color: white;
+}
